@@ -20,35 +20,35 @@
     --purple: #9966cc;
     --text: #e8e8f0;
     --muted: #888899;
-    --card-w: 64px;
-    --card-h: 90px;
+    --card-w: 52px;
+    --card-h: 72px;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
 
   body {
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    overflow-x: hidden;
+    height: 100vh;
   }
 
   /* ─── LOBBY ─── */
   #lobby {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; gap: 32px; padding: 24px;
+    height: 100vh; gap: 24px; padding: 24px;
     background: radial-gradient(ellipse at 50% 0%, #1a1428 0%, var(--bg) 70%);
+    overflow-y: auto;
   }
 
   .logo {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(56px, 10vw, 96px);
+    font-size: clamp(48px, 8vw, 80px);
     font-weight: 900;
     letter-spacing: 0.15em;
     color: var(--accent);
     text-shadow: 0 0 60px rgba(200,169,110,0.3);
-    position: relative;
   }
   .logo::after {
     content: 'CARD GAME';
@@ -66,32 +66,26 @@
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 36px;
+    padding: 26px;
     width: 100%;
-    max-width: 440px;
-    display: flex; flex-direction: column; gap: 16px;
+    max-width: 400px;
+    display: flex; flex-direction: column; gap: 13px;
   }
 
-  .lobby-box h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-
-  label { font-size: 11px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
+  .lobby-box h2 { font-family: 'Playfair Display', serif; font-size: 20px; color: var(--accent); }
+  label { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; }
 
   input[type=text] {
-    width: 100%; padding: 12px 16px;
+    width: 100%; padding: 10px 13px;
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace;
-    font-size: 15px; outline: none; transition: border-color 0.2s;
+    font-size: 14px; outline: none; transition: border-color 0.2s;
   }
   input[type=text]:focus { border-color: var(--accent); }
 
   .btn {
-    padding: 13px 24px; border-radius: 8px; border: none;
-    font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500;
+    padding: 10px 18px; border-radius: 8px; border: none;
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
     cursor: pointer; transition: all 0.15s; letter-spacing: 0.05em;
   }
   .btn-primary { background: var(--accent); color: #0a0a0f; }
@@ -100,123 +94,135 @@
   .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 
-  .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 11px; }
+  .divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 10px; }
   .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   .room-code-display {
     background: var(--surface2); border: 1px dashed var(--accent);
-    border-radius: 8px; padding: 16px; text-align: center;
+    border-radius: 8px; padding: 13px; text-align: center;
   }
-  .room-code-display .code {
-    font-size: 32px; letter-spacing: 0.3em; color: var(--accent);
-    font-family: 'Playfair Display', serif; font-weight: 700;
-  }
-  .room-code-display .hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .room-code-display .code { font-size: 28px; letter-spacing: 0.3em; color: var(--accent); font-family: 'Playfair Display', serif; font-weight: 700; }
+  .room-code-display .hint { font-size: 10px; color: var(--muted); margin-top: 4px; }
 
-  .player-list { display: flex; flex-direction: column; gap: 8px; }
+  .player-list { display: flex; flex-direction: column; gap: 6px; }
   .player-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 14px; background: var(--surface2); border-radius: 8px;
-    border: 1px solid var(--border); font-size: 13px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 11px; background: var(--surface2); border-radius: 7px;
+    border: 1px solid var(--border); font-size: 12px;
   }
   .player-item.me { border-color: var(--accent); }
-  .player-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-  .player-item .host-badge { margin-left: auto; font-size: 10px; color: var(--accent); letter-spacing: 0.05em; }
+  .player-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .player-item .host-badge { margin-left: auto; font-size: 9px; color: var(--accent); }
 
-  /* ─── GAME ─── */
-  #game { display: none; flex-direction: column; min-height: 100vh; }
+  .power-legend {
+    display: flex; flex-wrap: wrap; gap: 3px; justify-content: center;
+    font-size: 9px;
+  }
+  .pl-item { padding: 2px 5px; border-radius: 4px; border: 1px solid var(--border); color: var(--muted); }
+  .pl-peek { border-color: rgba(85,184,122,0.4); color: #55b87a; }
+  .pl-spy { border-color: rgba(85,153,224,0.4); color: #5599e0; }
+  .pl-swap { border-color: rgba(153,102,204,0.4); color: #9966cc; }
+  .pl-king { border-color: rgba(200,169,110,0.4); color: var(--accent); }
+
+  /* ─── GAME LAYOUT — fixed viewport ─── */
+  #game {
+    display: none;
+    height: 100vh;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
   .game-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 20px; background: var(--surface);
+    padding: 7px 14px; background: var(--surface);
     border-bottom: 1px solid var(--border); flex-shrink: 0;
   }
-  .game-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); }
-  .turn-info { font-size: 12px; color: var(--muted); text-align: center; }
-  .turn-info .active { color: var(--accent2); font-size: 14px; font-weight: 500; }
+  .game-title { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--accent); }
+  .turn-info { font-size: 10px; color: var(--muted); text-align: center; }
+  #turn-label { font-size: 12px; }
 
   .score-strip {
-    display: flex; gap: 8px; padding: 10px 20px; background: var(--surface2);
+    display: flex; gap: 5px; padding: 5px 12px; background: var(--surface2);
     border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0;
   }
   .score-badge {
     display: flex; flex-direction: column; align-items: center;
-    padding: 6px 14px; background: var(--surface); border-radius: 8px;
-    border: 1px solid var(--border); min-width: 80px; flex-shrink: 0;
-    font-size: 11px; gap: 2px; transition: border-color 0.2s;
+    padding: 3px 10px; background: var(--surface); border-radius: 6px;
+    border: 1px solid var(--border); min-width: 64px; flex-shrink: 0;
+    font-size: 9px; gap: 1px;
   }
   .score-badge.active-player { border-color: var(--accent); }
-  .score-badge .sname { color: var(--muted); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 80px; }
-  .score-badge .sval { color: var(--text); font-size: 16px; font-family: 'Playfair Display', serif; }
-  .score-badge .sround { color: var(--muted); font-size: 10px; }
+  .score-badge .sname { color: var(--muted); overflow: hidden; white-space: nowrap; max-width: 70px; text-overflow: ellipsis; }
+  .score-badge .sval { color: var(--text); font-size: 14px; font-family: 'Playfair Display', serif; }
 
-  .game-board {
-    flex: 1; display: flex; flex-direction: column;
-    gap: 16px; padding: 16px; overflow-y: auto;
+  /* main area = board + chat */
+  .game-main {
+    flex: 1; display: flex; overflow: hidden; min-height: 0;
   }
 
-  .opponents-area { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  /* ─── BOARD ─── */
+  .game-board {
+    flex: 1; display: flex; flex-direction: column;
+    gap: 8px; padding: 8px 10px; overflow-y: auto; min-height: 0;
+  }
+
+  .opponents-area { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
 
   .opponent-zone {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 14px; min-width: 180px;
-    display: flex; flex-direction: column; gap: 10px; align-items: center;
+    border-radius: 9px; padding: 8px; min-width: 130px;
+    display: flex; flex-direction: column; gap: 6px; align-items: center;
   }
-  .opponent-zone.active-turn { border-color: var(--accent); box-shadow: 0 0 20px rgba(200,169,110,0.15); }
-  .opponent-name { font-size: 12px; color: var(--muted); }
+  .opponent-zone.active-turn { border-color: var(--accent); box-shadow: 0 0 14px rgba(200,169,110,0.15); }
+  .opponent-name { font-size: 10px; color: var(--muted); }
 
-  /* ─── CENTER ─── */
+  /* center */
   .center-area {
-    display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap;
   }
-
-  .pile-container { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-  .pile-label { font-size: 10px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; }
+  .pile-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .pile-label { font-size: 8px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; }
 
   /* ─── CARD ─── */
   .card {
     width: var(--card-w); height: var(--card-h);
-    border-radius: 8px; border: 1px solid var(--border);
+    border-radius: 7px; border: 1px solid var(--border);
     cursor: pointer; transition: all 0.15s;
     display: flex; align-items: center; justify-content: center;
     position: relative; user-select: none; flex-shrink: 0;
     font-family: 'Playfair Display', serif;
   }
-
   .card.face-down {
     background: linear-gradient(135deg, #1e1e35 0%, #2a2a45 50%, #1e1e35 100%);
-    background-image: 
-      linear-gradient(135deg, #1e1e35 0%, #2a2a45 50%, #1e1e35 100%),
-      repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(200,169,110,0.04) 4px, rgba(200,169,110,0.04) 8px);
   }
-  .card.face-down::after {
-    content: '✦';
-    color: var(--accent);
-    opacity: 0.3;
-    font-size: 22px;
-  }
-
+  .card.face-down::after { content: '✦'; color: var(--accent); opacity: 0.3; font-size: 17px; }
   .card.face-up {
     background: #f5f0e8; color: #1a1a1a;
-    flex-direction: column; justify-content: space-between; padding: 5px;
+    flex-direction: column; justify-content: space-between; padding: 4px;
   }
   .card.face-up.red-suit { color: #c0392b; }
-
-  .card-corner { font-size: 13px; font-weight: 700; line-height: 1; }
-  .card-center { font-size: 22px; }
+  .card-corner { font-size: 10px; font-weight: 700; line-height: 1; }
+  .card-center { font-size: 16px; }
   .card-corner.bottom { align-self: flex-end; transform: rotate(180deg); }
 
-  .card.special { box-shadow: inset 0 0 0 2px rgba(200,169,110,0.4); }
-  .card.peek-card { box-shadow: inset 0 0 0 2px rgba(85,184,122,0.5); }
-  .card.spy-card { box-shadow: inset 0 0 0 2px rgba(85,153,224,0.5); }
-  .card.swap-card { box-shadow: inset 0 0 0 2px rgba(153,102,204,0.5); }
+  .card.peek-card { box-shadow: inset 0 0 0 2px rgba(85,184,122,0.6); }
+  .card.spy-card { box-shadow: inset 0 0 0 2px rgba(85,153,224,0.6); }
+  .card.swap-card { box-shadow: inset 0 0 0 2px rgba(153,102,204,0.6); }
+  .card.king-card { box-shadow: inset 0 0 0 2px rgba(200,169,110,0.8); }
 
-  .card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
-  .card.selected { transform: translateY(-8px); box-shadow: 0 0 0 2px var(--accent), 0 12px 24px rgba(0,0,0,0.5); }
-  .card.selectable { cursor: pointer; }
+  .card:hover:not(.not-selectable) { transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.4); }
+  .card.selected { transform: translateY(-5px) !important; box-shadow: 0 0 0 2px var(--accent), 0 8px 18px rgba(0,0,0,0.5) !important; }
   .card.selectable:hover { border-color: var(--accent); }
   .card.not-selectable { cursor: default; }
-  .card.not-selectable:hover { transform: none; box-shadow: none; }
+  .card.not-selectable:hover { transform: none !important; box-shadow: none !important; }
+
+  /* 2×2 grid */
+  .hand-grid {
+    display: grid;
+    grid-template-columns: repeat(2, var(--card-w));
+    grid-template-rows: repeat(2, var(--card-h));
+    gap: 4px;
+  }
 
   .deck-card {
     background: linear-gradient(135deg, #1e1e35 0%, #2a2a45 100%);
@@ -224,135 +230,139 @@
   }
   .deck-card::before {
     content: attr(data-count);
-    position: absolute; bottom: 6px; right: 8px;
-    font-size: 10px; color: var(--accent); opacity: 0.7;
+    position: absolute; bottom: 3px; right: 5px;
+    font-size: 8px; color: var(--accent); opacity: 0.7;
     font-family: 'DM Mono', monospace;
   }
-
   .discard-empty {
     width: var(--card-w); height: var(--card-h);
-    border-radius: 8px; border: 2px dashed var(--border);
+    border-radius: 7px; border: 2px dashed var(--border);
     display: flex; align-items: center; justify-content: center;
-    color: var(--border); font-size: 20px;
+    color: var(--border); font-size: 16px;
   }
 
-  /* ─── MY AREA ─── */
+  /* my area */
   .my-area {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px;
-    display: flex; flex-direction: column; gap: 12px; align-items: center;
+    border-radius: 9px; padding: 8px;
+    display: flex; flex-direction: column; gap: 6px; align-items: center;
   }
   .my-area.my-turn { border-color: var(--accent); }
-  .my-cards { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
-  /* ─── ACTION BAR ─── */
-  .action-bar {
-    display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
-    padding: 12px 16px; background: var(--surface2);
-    border-top: 1px solid var(--border); flex-shrink: 0;
+  /* drawn card */
+  .drawn-area {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 8px; background: var(--surface2); border-radius: 8px;
+    border: 1px dashed var(--border);
   }
+  .drawn-area-label { font-size: 8px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
 
-  .btn-action { font-size: 12px; padding: 10px 18px; }
-  .btn-danger { background: rgba(224,85,85,0.15); color: var(--red); border: 1px solid rgba(224,85,85,0.3); }
-  .btn-danger:hover { background: rgba(224,85,85,0.25); border-color: var(--red); }
-  .btn-success { background: rgba(85,184,122,0.15); color: var(--green); border: 1px solid rgba(85,184,122,0.3); }
-  .btn-success:hover { background: rgba(85,184,122,0.25); border-color: var(--green); }
-  .btn-blue { background: rgba(85,153,224,0.15); color: var(--blue); border: 1px solid rgba(85,153,224,0.3); }
-  .btn-blue:hover { background: rgba(85,153,224,0.25); border-color: var(--blue); }
-
-  /* ─── LOG ─── */
+  /* log */
   .log-panel {
-    max-height: 80px; overflow-y: auto; padding: 0 20px;
-    display: flex; flex-direction: column-reverse; gap: 4px;
+    max-height: 50px; overflow-y: auto; width: 100%;
+    display: flex; flex-direction: column-reverse; gap: 2px;
+  }
+  .log-entry { font-size: 9px; color: var(--muted); }
+  .log-entry .lname { color: var(--accent); }
+
+  /* ─── CHAT ─── */
+  .chat-panel {
+    width: 210px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .chat-header {
+    padding: 7px 11px; border-bottom: 1px solid var(--border);
+    font-size: 9px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase;
     flex-shrink: 0;
   }
-  .log-entry { font-size: 11px; color: var(--muted); }
-  .log-entry .name { color: var(--accent); }
-  .log-entry .action { color: var(--text); }
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 7px 9px;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .chat-msg { font-size: 10px; line-height: 1.4; }
+  .chat-msg .cname { color: var(--accent); font-size: 9px; }
+  .chat-msg.me .cname { color: var(--accent2); }
+  .chat-msg .cbody { color: var(--text); word-break: break-word; }
+  .chat-msg.system .cbody { color: var(--muted); font-style: italic; }
+  .chat-input-area {
+    padding: 7px 9px; border-top: 1px solid var(--border);
+    display: flex; gap: 5px; flex-shrink: 0;
+  }
+  .chat-input-area input {
+    flex: 1; padding: 6px 8px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 10px;
+    outline: none;
+  }
+  .chat-input-area input:focus { border-color: var(--accent); }
+  .chat-send-btn {
+    padding: 6px 9px; background: var(--accent); color: #0a0a0f;
+    border: none; border-radius: 6px; cursor: pointer; font-size: 11px;
+    transition: background 0.15s;
+  }
+  .chat-send-btn:hover { background: var(--accent2); }
+
+  /* ─── BOTTOM BAR ─── */
+  .bottom-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 12px; background: var(--surface2);
+    border-top: 1px solid var(--border); flex-shrink: 0; gap: 8px;
+    min-height: 40px;
+  }
+  .help-text { font-size: 10px; color: var(--muted); flex: 1; }
+
+  .btn-action { font-size: 10px; padding: 7px 12px; white-space: nowrap; }
+  .btn-danger { background: rgba(224,85,85,0.15); color: var(--red); border: 1px solid rgba(224,85,85,0.3); }
+  .btn-danger:hover:not(:disabled) { background: rgba(224,85,85,0.25); border-color: var(--red); }
+  .btn-success { background: rgba(85,184,122,0.15); color: var(--green); border: 1px solid rgba(85,184,122,0.3); }
+  .btn-success:hover { background: rgba(85,184,122,0.25); border-color: var(--green); }
 
   /* ─── MODAL ─── */
   .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.75);
     display: flex; align-items: center; justify-content: center;
     z-index: 100; backdrop-filter: blur(4px);
     opacity: 0; pointer-events: none; transition: opacity 0.2s;
   }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
-
   .modal {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 32px; max-width: 400px; width: 90%;
-    text-align: center; display: flex; flex-direction: column; gap: 16px;
-    transform: scale(0.95); transition: transform 0.2s;
+    border-radius: 13px; padding: 24px; max-width: 360px; width: 90%;
+    text-align: center; display: flex; flex-direction: column; gap: 12px;
+    transform: scale(0.95); transition: transform 0.2s; max-height: 88vh; overflow-y: auto;
   }
   .modal-overlay.open .modal { transform: scale(1); }
-  .modal h2 { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--accent); }
-  .modal p { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .modal .score-table { text-align: left; font-size: 13px; width: 100%; }
-  .modal .score-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); }
-  .modal .score-row.winner { color: var(--green); }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); }
+  .modal p { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .score-table { text-align: left; font-size: 11px; width: 100%; }
+  .score-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); gap: 8px; }
+  .score-row.winner { color: var(--green); }
 
-  /* Peek/Spy overlay on card */
-  .peek-overlay {
-    position: absolute; inset: 0; background: rgba(0,0,0,0.7);
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-    color: var(--accent); font-size: 11px; text-align: center; padding: 4px;
-    pointer-events: none; opacity: 0; transition: opacity 0.3s;
-    font-family: 'DM Mono', monospace;
-  }
-  .card:hover .peek-overlay.visible { opacity: 1; }
-
-  /* Status chips */
-  .status-chip {
-    padding: 4px 10px; border-radius: 20px; font-size: 10px; letter-spacing: 0.05em;
-    display: inline-block;
-  }
+  .status-chip { padding: 3px 7px; border-radius: 20px; font-size: 9px; display: inline-block; }
   .chip-cabo { background: rgba(200,169,110,0.15); color: var(--accent); border: 1px solid var(--accent); }
-  .chip-last { background: rgba(224,85,85,0.15); color: var(--red); border: 1px solid var(--red); }
 
-  .help-text { font-size: 11px; color: var(--muted); text-align: center; min-height: 28px; padding: 0 8px; }
-
-  /* Drawn card area */
-  .drawn-area {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    padding: 12px; background: var(--surface2); border-radius: 10px;
-    border: 1px dashed var(--border);
-  }
-  .drawn-area-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-  .pulsing { animation: pulse 1.5s ease-in-out infinite; }
-
-  @keyframes slideIn {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
-  .slide-in { animation: slideIn 0.3s ease forwards; }
-
-  /* Firebase loading */
+  /* loading */
   .loading-overlay {
     position: fixed; inset: 0; background: var(--bg);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 200; gap: 16px;
+    z-index: 200; gap: 14px;
   }
-  .spinner {
-    width: 40px; height: 40px; border: 3px solid var(--border);
-    border-top-color: var(--accent); border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
+  .spinner { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
+  .pulsing { animation: pulse 1.5s ease-in-out infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loading">
-  <div style="font-family:'Playfair Display',serif;font-size:40px;color:var(--accent)">CABO</div>
+  <div style="font-family:'Playfair Display',serif;font-size:36px;color:var(--accent)">CABO</div>
   <div class="spinner"></div>
-  <div style="font-size:12px;color:var(--muted)">Connecting...</div>
+  <div style="font-size:10px;color:var(--muted)">Connecting...</div>
 </div>
 
 <!-- LOBBY -->
@@ -371,13 +381,21 @@
   <div class="lobby-box" id="lobby-main" style="display:none">
     <h2>Play Cabo</h2>
     <button class="btn btn-primary" onclick="createRoom()">🎲 Create New Room</button>
-    <div class="divider">or</div>
+    <div class="divider">or join existing</div>
     <div>
       <label>Room Code</label>
-      <input type="text" id="join-code-input" placeholder="Enter 4-letter code..." maxlength="4" 
-        style="text-transform:uppercase;letter-spacing:0.2em;font-size:18px" />
+      <input type="text" id="join-code-input" placeholder="4-letter code..." maxlength="4"
+        style="text-transform:uppercase;letter-spacing:0.2em;font-size:16px" />
     </div>
     <button class="btn btn-secondary" onclick="joinRoom()">Join Room →</button>
+    <div class="power-legend">
+      <span class="pl-item pl-peek">7/8 Peek own</span>
+      <span class="pl-item pl-spy">9/10 Spy opp.</span>
+      <span class="pl-item pl-swap">J Blind Swap</span>
+      <span class="pl-item pl-swap">Q Peek opp+Swap</span>
+      <span class="pl-item pl-king">K Peek both+Swap</span>
+      <span class="pl-item pl-king">K♠ = 0 pts</span>
+    </div>
   </div>
 
   <div class="lobby-box" id="waiting-room" style="display:none">
@@ -387,12 +405,10 @@
       <div class="hint">Share this code with friends</div>
     </div>
     <div>
-      <label style="margin-bottom:8px;display:block">Players (<span id="player-count">1</span>/6)</label>
+      <label style="margin-bottom:5px;display:block">Players (<span id="player-count">1</span>/6)</label>
       <div class="player-list" id="player-list"></div>
     </div>
-    <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>
-      Start Game (need 2+)
-    </button>
+    <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start Game (need 2+)</button>
     <button class="btn btn-secondary" onclick="leaveRoom()">← Leave</button>
   </div>
 </div>
@@ -403,69 +419,78 @@
     <div class="game-title">CABO</div>
     <div class="turn-info">
       <div id="turn-label" class="pulsing">Loading...</div>
-      <div id="round-label" style="margin-top:2px;font-size:11px;color:var(--muted)">Round 1</div>
+      <div id="round-label" style="font-size:9px;color:var(--muted);margin-top:1px">Round 1</div>
     </div>
     <div id="cabo-status"></div>
   </div>
 
   <div class="score-strip" id="score-strip"></div>
 
-  <div class="game-board">
-    <div class="opponents-area" id="opponents-area"></div>
+  <div class="game-main">
+    <!-- Board -->
+    <div class="game-board">
+      <div class="opponents-area" id="opponents-area"></div>
 
-    <div class="center-area">
-      <div class="pile-container">
-        <div class="pile-label">Draw Pile</div>
-        <div class="card deck-card face-down" id="deck-pile" data-count="" onclick="drawFromDeck()">
-          <span style="color:var(--accent);opacity:0.3;font-size:22px">✦</span>
-        </div>
-      </div>
-
-      <div id="drawn-card-area" style="display:none">
-        <div class="drawn-area">
-          <div class="drawn-area-label">Drawn Card</div>
-          <div class="card face-up" id="drawn-card-display" style="cursor:default"></div>
-          <div style="display:flex;gap:6px;margin-top:4px">
-            <button class="btn btn-secondary btn-action" onclick="discardDrawnCard()">Discard</button>
-            <button class="btn btn-success btn-action" id="use-power-btn" onclick="usePower()" style="display:none">Use Power</button>
+      <div class="center-area">
+        <div class="pile-container">
+          <div class="pile-label">Draw Pile</div>
+          <div class="card deck-card face-down" id="deck-pile" data-count="" onclick="drawFromDeck()">
+            <span style="color:var(--accent);opacity:0.3;font-size:17px">✦</span>
           </div>
         </div>
-      </div>
 
-      <div class="pile-container">
-        <div class="pile-label">Discard Pile</div>
-        <div id="discard-pile-display">
-          <div class="discard-empty">+</div>
+        <div id="drawn-card-area" style="display:none">
+          <div class="drawn-area">
+            <div class="drawn-area-label">Drawn Card</div>
+            <div class="card face-up" id="drawn-card-display" style="cursor:default"></div>
+            <div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;justify-content:center">
+              <button class="btn btn-secondary btn-action" onclick="discardDrawnCard()">Discard</button>
+              <button class="btn btn-success btn-action" id="use-power-btn" onclick="usePower()" style="display:none">Use Power</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pile-container">
+          <div class="pile-label">Discard Pile</div>
+          <div id="discard-pile-display"><div class="discard-empty">+</div></div>
         </div>
       </div>
+
+      <div class="my-area" id="my-area">
+        <div style="font-size:9px;color:var(--muted)" id="my-name-label">You</div>
+        <div class="hand-grid" id="my-cards"></div>
+      </div>
+
+      <div class="log-panel" id="log-panel"></div>
     </div>
 
-    <div class="help-text" id="help-text">Waiting...</div>
-
-    <div class="my-area" id="my-area">
-      <div style="font-size:11px;color:var(--muted)" id="my-name-label">You</div>
-      <div class="my-cards" id="my-cards"></div>
+    <!-- Chat -->
+    <div class="chat-panel">
+      <div class="chat-header">💬 Chat</div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Message..." maxlength="120" />
+        <button class="chat-send-btn" onclick="sendChat()">↑</button>
+      </div>
     </div>
-
-    <div class="log-panel" id="log-panel"></div>
   </div>
 
-  <div class="action-bar" id="action-bar">
+  <div class="bottom-bar">
+    <div class="help-text" id="help-text">Waiting...</div>
     <button class="btn btn-action btn-danger" id="cabo-btn" onclick="callCabo()">📣 Call CABO</button>
   </div>
 </div>
 
-<!-- Round End Modal -->
+<!-- Modals -->
 <div class="modal-overlay" id="round-modal">
   <div class="modal">
     <h2>Round Over!</h2>
     <div id="round-modal-content"></div>
     <button class="btn btn-primary" id="next-round-btn" onclick="nextRound()" style="display:none">Next Round →</button>
-    <button class="btn btn-secondary" onclick="closeRoundModal()">Continue</button>
+    <button class="btn btn-secondary" onclick="closeRoundModal()">Close</button>
   </div>
 </div>
 
-<!-- Game End Modal -->
 <div class="modal-overlay" id="game-over-modal">
   <div class="modal">
     <h2 id="gameover-title">Game Over!</h2>
@@ -474,48 +499,12 @@
   </div>
 </div>
 
-<!-- Peek Modal -->
-<div class="modal-overlay" id="peek-modal">
-  <div class="modal">
-    <h2>👁 Peek</h2>
-    <p id="peek-msg">Choose one of your cards to peek at.</p>
-    <button class="btn btn-secondary" onclick="cancelPeek()">Cancel</button>
-  </div>
-</div>
-
-<!-- Spy Modal -->
-<div class="modal-overlay" id="spy-modal">
-  <div class="modal">
-    <h2>🔍 Spy</h2>
-    <p id="spy-msg">Choose an opponent's card to peek at.</p>
-    <div id="spy-result" style="margin:8px 0"></div>
-    <button class="btn btn-secondary" onclick="cancelSpy()">Cancel</button>
-  </div>
-</div>
-
-<!-- Swap Modal -->
-<div class="modal-overlay" id="swap-modal">
-  <div class="modal">
-    <h2>🔄 Swap</h2>
-    <p id="swap-msg">First select one of YOUR cards, then an OPPONENT's card.</p>
-    <div id="swap-my-display" style="margin-top:8px"></div>
-    <button class="btn btn-secondary" onclick="cancelSwap()">Cancel</button>
-  </div>
-</div>
-
-<!-- Firebase SDK -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue, push, remove, off }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// ══════════════════════════════════════════════
-//  FIREBASE CONFIG — replace with your own!
-//  (free plan, no credit card needed)
-//  Steps: go to console.firebase.google.com
-//  Create project → Realtime Database → Start in test mode
-//  Copy config here
-// ══════════════════════════════════════════════
+// ══ PASTE YOUR FIREBASE CONFIG HERE ══
 const firebaseConfig = {
   apiKey: "AIzaSyDvuECKAQvX4WY9UwBYHXrkGcivcBKwd8c",
   authDomain: "cabo-1611d.firebaseapp.com",
@@ -529,38 +518,29 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// ══════════════════════════════════════════════
-//  GAME STATE
-// ══════════════════════════════════════════════
-let myId = null;       // Firebase push key
-let myName = '';
-let roomCode = null;
-let roomRef = null;
-let gameState = null;
-let isHost = false;
-let listeners = [];
-
-// Peek/Spy/Swap state
-let pendingAction = null; // { type, drawnCard }
-let swapMyCard = null;    // { pos }
-
-// For initial peek at start
-let initialPeekCount = 0;
-let initialPeekDone = false;
+// ══ STATE ══
+let myId = null, myName = '', roomCode = null, roomRef = null;
+let gameState = null, isHost = false;
+let pendingAction = null;
+let initialPeekCount = 0, initialPeekDone = false;
+const myKnownCards = new Map(); // pos → card
 
 const SUITS = ['♠','♥','♦','♣'];
 const SUIT_RED = new Set(['♥','♦']);
 
+// ── Deck builder ──
+// K♠ = 0 pts (but still face=13), all others face=value
+// Joker = 0 pts
 function buildDeck() {
-  let deck = [];
-  for (let v = 0; v <= 13; v++) {
-    for (let s of SUITS) {
-      deck.push({ value: v, suit: s });
+  const deck = [];
+  for (let f = 1; f <= 13; f++) {
+    for (const s of SUITS) {
+      const value = (f === 13 && s === '♠') ? 0 : f;
+      deck.push({ face: f, suit: s, value });
     }
   }
-  // jokers (value 0)
-  deck.push({ value: 0, suit: '★' });
-  deck.push({ value: 0, suit: '★' });
+  deck.push({ face: 0, suit: '★', value: 0 });
+  deck.push({ face: 0, suit: '★', value: 0 });
   return deck;
 }
 
@@ -575,52 +555,44 @@ function shuffle(arr) {
 
 function cardPower(card) {
   if (!card) return null;
-  if (card.value === 7 || card.value === 8) return 'peek';
-  if (card.value === 9 || card.value === 10) return 'spy';
-  if (card.value === 11 || card.value === 12) return 'swap';
+  const f = card.face ?? card.value;
+  if (f === 7 || f === 8) return 'peek';
+  if (f === 9 || f === 10) return 'spy';
+  if (f === 11) return 'blindswap';
+  if (f === 12) return 'peekswap';
+  if (f === 13) return 'kingswap';
   return null;
 }
 
 function cardDisplay(card) {
-  if (!card) return '';
-  const v = card.value;
-  let label = String(v);
-  if (v === 0) label = card.suit === '★' ? '★' : '0';
-  if (v === 11) label = 'J';
-  if (v === 12) label = 'Q';
-  if (v === 13) label = 'K';
-  return { label, suit: card.suit, isRed: SUIT_RED.has(card.suit) };
+  if (!card) return { label: '?', suit: '', isRed: false };
+  const f = card.face ?? card.value;
+  let label = String(f);
+  if (!f || card.suit === '★') label = '★';
+  if (f === 1) label = 'A';
+  if (f === 11) label = 'J';
+  if (f === 12) label = 'Q';
+  if (f === 13) label = 'K';
+  return { label, suit: card.suit || '', isRed: SUIT_RED.has(card.suit) };
 }
 
-// ══════════════════════════════════════════════
-//  CARD RENDERING
-// ══════════════════════════════════════════════
 function makeCardEl(card, opts = {}) {
   const el = document.createElement('div');
   el.className = 'card';
-  if (!card || opts.faceDown) {
-    el.classList.add('face-down');
-    return el;
-  }
+  if (!card || opts.faceDown) { el.classList.add('face-down'); return el; }
   el.classList.add('face-up');
   const d = cardDisplay(card);
   if (d.isRed) el.classList.add('red-suit');
-  const power = cardPower(card);
-  if (power === 'peek') el.classList.add('peek-card');
-  if (power === 'spy') el.classList.add('spy-card');
-  if (power === 'swap') el.classList.add('swap-card');
-
-  el.innerHTML = `
-    <span class="card-corner">${d.label}</span>
-    <span class="card-center">${d.suit}</span>
-    <span class="card-corner bottom">${d.label}</span>
-  `;
+  const p = cardPower(card);
+  if (p === 'peek') el.classList.add('peek-card');
+  else if (p === 'spy') el.classList.add('spy-card');
+  else if (p === 'blindswap' || p === 'peekswap') el.classList.add('swap-card');
+  else if (p === 'kingswap') el.classList.add('king-card');
+  el.innerHTML = `<span class="card-corner">${d.label}</span><span class="card-center">${d.suit}</span><span class="card-corner bottom">${d.label}</span>`;
   return el;
 }
 
-// ══════════════════════════════════════════════
-//  LOBBY
-// ══════════════════════════════════════════════
+// ══ LOBBY ══
 function showScreen(id) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('lobby').style.display = id === 'lobby' ? 'flex' : 'none';
@@ -637,8 +609,7 @@ window.setName = function() {
 
 window.createRoom = async function() {
   const code = Array.from({length:4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*23)]).join('');
-  roomCode = code;
-  isHost = true;
+  roomCode = code; isHost = true;
   await joinRoomWithCode(code);
 };
 
@@ -647,10 +618,8 @@ window.joinRoom = async function() {
   if (code.length !== 4) return alert('Enter a 4-letter room code');
   const snap = await get(ref(db, `rooms/${code}`));
   if (!snap.exists()) return alert('Room not found');
-  const room = snap.val();
-  if (room.state !== 'lobby') return alert('Game already started');
-  roomCode = code;
-  isHost = false;
+  if (snap.val().state !== 'lobby') return alert('Game already started');
+  roomCode = code; isHost = false;
   await joinRoomWithCode(code);
 };
 
@@ -658,31 +627,23 @@ async function joinRoomWithCode(code) {
   roomRef = ref(db, `rooms/${code}`);
   const playerRef = push(ref(db, `rooms/${code}/players`));
   myId = playerRef.key;
-
   const snap = await get(ref(db, `rooms/${code}/players`));
-  const existing = snap.val() || {};
-  const count = Object.keys(existing).length;
-
+  const count = Object.keys(snap.val() || {}).length;
   await set(playerRef, { name: myName, id: myId, score: 0 });
-
   if (count === 0) {
-    // first player = host, set up room
     await set(ref(db, `rooms/${code}/state`), 'lobby');
     await set(ref(db, `rooms/${code}/host`), myId);
   }
-
   document.getElementById('display-room-code').textContent = code;
   document.getElementById('lobby-main').style.display = 'none';
   document.getElementById('waiting-room').style.display = 'flex';
-
   listenLobby();
 }
 
 function listenLobby() {
   const pr = ref(db, `rooms/${roomCode}/players`);
-  const unsub = onValue(pr, snap => {
-    const players = snap.val() || {};
-    const arr = Object.values(players);
+  onValue(pr, snap => {
+    const arr = Object.values(snap.val() || {});
     document.getElementById('player-count').textContent = arr.length;
     const list = document.getElementById('player-list');
     list.innerHTML = '';
@@ -692,27 +653,16 @@ function listenLobby() {
       div.innerHTML = `<div class="player-dot"></div><span>${p.name}</span>${p.id === arr[0]?.id ? '<span class="host-badge">HOST</span>' : ''}`;
       list.appendChild(div);
     });
-    const startBtn = document.getElementById('start-btn');
-    startBtn.disabled = arr.length < 2 || arr[0]?.id !== myId;
-    startBtn.textContent = arr.length < 2 ? 'Start Game (need 2+)' : `Start Game (${arr.length} players)`;
+    const sb = document.getElementById('start-btn');
+    sb.disabled = arr.length < 2 || arr[0]?.id !== myId;
+    sb.textContent = arr.length < 2 ? 'Start Game (need 2+)' : `Start Game (${arr.length} players)`;
   });
-  listeners.push({ ref: pr, unsub });
-
   const sr = ref(db, `rooms/${roomCode}/state`);
-  const unsub2 = onValue(sr, snap => {
-    if (snap.val() === 'playing') {
-      document.getElementById('waiting-room').style.display = 'none';
-      off(pr);
-      off(sr);
-      initGame();
-    }
-  });
+  onValue(sr, snap => { if (snap.val() === 'playing') { off(sr); initGame(); } });
 }
 
 window.leaveRoom = function() {
-  if (roomCode && myId) {
-    remove(ref(db, `rooms/${roomCode}/players/${myId}`));
-  }
+  if (roomCode && myId) remove(ref(db, `rooms/${roomCode}/players/${myId}`));
   location.reload();
 };
 
@@ -721,173 +671,162 @@ window.startGame = async function() {
   const snap = await get(ref(db, `rooms/${roomCode}/players`));
   const playersObj = snap.val();
   const playerArr = Object.values(playersObj);
-
   const deck = shuffle(buildDeck());
   const hands = {};
-  playerArr.forEach(p => {
-    hands[p.id] = [deck.shift(), deck.shift(), deck.shift(), deck.shift()];
-  });
-
+  playerArr.forEach(p => { hands[p.id] = [deck.shift(), deck.shift(), deck.shift(), deck.shift()]; });
   const discard = deck.shift();
   const state = {
-    deck,
-    discard: [discard],
-    hands,
+    deck, discard: [discard], hands,
     playerOrder: playerArr.map(p => p.id),
     playerNames: Object.fromEntries(playerArr.map(p => [p.id, p.name])),
     scores: Object.fromEntries(playerArr.map(p => [p.id, 0])),
     currentTurn: playerArr[0].id,
-    caboCallerId: null,
-    lastTurns: {},      // pid -> turns remaining after cabo
-    phase: 'initial-peek',  // initial-peek → play → round-end
-    drawnCard: null,
-    round: 1,
-    log: []
+    caboCallerId: null, lastTurns: {},
+    phase: 'initial-peek', drawnCard: null, round: 1, log: []
   };
-
   await set(roomRef, { state: 'playing', players: playersObj, host: myId, game: state });
 };
 
-// ══════════════════════════════════════════════
-//  GAME
-// ══════════════════════════════════════════════
+// ══ GAME ══
 function initGame() {
   showScreen('game');
-  const gr = ref(db, `rooms/${roomCode}/game`);
-  const unsub = onValue(gr, snap => {
+  onValue(ref(db, `rooms/${roomCode}/game`), snap => {
     if (!snap.exists()) return;
     gameState = snap.val();
-    // Firebase stores arrays as objects sometimes
-    if (gameState.deck && !Array.isArray(gameState.deck)) gameState.deck = Object.values(gameState.deck);
-    gameState.playerOrder.forEach(pid => {
-      if (gameState.hands[pid] && !Array.isArray(gameState.hands[pid]))
-        gameState.hands[pid] = Object.values(gameState.hands[pid]);
-      if (gameState.discard && !Array.isArray(gameState.discard))
-        gameState.discard = Object.values(gameState.discard);
-    });
+    fixArrays(gameState);
     renderGame();
+  });
+  onValue(ref(db, `rooms/${roomCode}/chat`), snap => {
+    if (!snap.exists()) return;
+    const arr = Object.values(snap.val());
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = '';
+    arr.slice(-80).forEach(m => {
+      const div = document.createElement('div');
+      div.className = 'chat-msg' + (m.id === myId ? ' me' : '') + (m.system ? ' system' : '');
+      div.innerHTML = m.system
+        ? `<span class="cbody">${m.text}</span>`
+        : `<div class="cname">${m.name}</div><div class="cbody">${esc(m.text)}</div>`;
+      container.appendChild(div);
+    });
+    container.scrollTop = container.scrollHeight;
   });
 }
 
-function isMyTurn() { return gameState && gameState.currentTurn === myId; }
+function fixArrays(gs) {
+  if (gs.deck && !Array.isArray(gs.deck)) gs.deck = Object.values(gs.deck);
+  if (gs.playerOrder && !Array.isArray(gs.playerOrder)) gs.playerOrder = Object.values(gs.playerOrder);
+  if (gs.discard && !Array.isArray(gs.discard)) gs.discard = Object.values(gs.discard);
+  if (gs.log && !Array.isArray(gs.log)) gs.log = Object.values(gs.log);
+  (gs.playerOrder || []).forEach(pid => {
+    if (gs.hands?.[pid] && !Array.isArray(gs.hands[pid])) gs.hands[pid] = Object.values(gs.hands[pid]);
+  });
+}
+
+const isMyTurn = () => gameState?.currentTurn === myId;
 
 function renderGame() {
   if (!gameState) return;
   const gs = gameState;
+  const myTurn = isMyTurn();
+  const currentName = gs.playerNames?.[gs.currentTurn] || '?';
 
   // Header
-  const myTurn = isMyTurn();
-  const currentName = gs.playerNames[gs.currentTurn] || '?';
-  document.getElementById('turn-label').textContent = myTurn ? '✨ Your Turn' : `${currentName}'s Turn`;
-  document.getElementById('turn-label').style.color = myTurn ? 'var(--accent2)' : 'var(--text)';
+  const tl = document.getElementById('turn-label');
+  tl.textContent = myTurn ? '✨ Your Turn' : `${currentName}'s Turn`;
+  tl.style.color = myTurn ? 'var(--accent2)' : 'var(--text)';
   document.getElementById('round-label').textContent = `Round ${gs.round || 1}`;
-
-  if (gs.caboCallerId) {
-    const callerName = gs.playerNames[gs.caboCallerId];
-    document.getElementById('cabo-status').innerHTML = `<span class="status-chip chip-cabo">CABO called by ${callerName}</span>`;
-  } else {
-    document.getElementById('cabo-status').innerHTML = '';
-  }
+  document.getElementById('cabo-status').innerHTML = gs.caboCallerId
+    ? `<span class="status-chip chip-cabo">CABO — ${gs.playerNames[gs.caboCallerId]}</span>` : '';
 
   // Scores
   const strip = document.getElementById('score-strip');
   strip.innerHTML = '';
-  gs.playerOrder.forEach(pid => {
+  (gs.playerOrder || []).forEach(pid => {
     const div = document.createElement('div');
     div.className = 'score-badge' + (pid === gs.currentTurn ? ' active-player' : '');
-    const roundScore = gs.scores?.[pid] ?? 0;
-    div.innerHTML = `
-      <span class="sname">${gs.playerNames[pid]}${pid === myId ? ' (you)' : ''}</span>
-      <span class="sval">${roundScore}</span>
-      <span class="sround">total</span>
-    `;
+    div.innerHTML = `<span class="sname">${gs.playerNames[pid]}${pid === myId ? ' ★' : ''}</span><span class="sval">${gs.scores?.[pid] ?? 0}</span>`;
     strip.appendChild(div);
   });
 
   // Opponents
   const oppArea = document.getElementById('opponents-area');
   oppArea.innerHTML = '';
-  gs.playerOrder.filter(pid => pid !== myId).forEach(pid => {
+  (gs.playerOrder || []).filter(pid => pid !== myId).forEach(pid => {
     const zone = document.createElement('div');
     zone.className = 'opponent-zone' + (pid === gs.currentTurn ? ' active-turn' : '');
-    const hand = gs.hands[pid] || [];
-    const cardsHtml = hand.map((c, i) => {
-      const el = makeCardEl(c, { faceDown: true });
-      el.classList.add('not-selectable');
-      return el.outerHTML;
-    }).join('');
-
-    let swapBtnHtml = '';
-    if (pendingAction?.type === 'swap' && swapMyCard !== null && isMyTurn()) {
-      swapBtnHtml = hand.map((c, i) => 
-        `<button class="btn btn-purple btn-action" style="background:rgba(153,102,204,0.15);color:var(--purple);border:1px solid var(--purple);font-size:11px;padding:6px 10px;margin:2px" onclick="swapSelectOpponent('${pid}',${i})">Card ${i+1}</button>`
-      ).join('');
-    }
-
-    let spyBtnHtml = '';
-    if (pendingAction?.type === 'spy' && isMyTurn()) {
-      spyBtnHtml = hand.map((c, i) =>
-        `<button class="btn btn-blue btn-action" style="font-size:11px;padding:6px 10px;margin:2px" onclick="spyCard('${pid}',${i})">Spy Card ${i+1}</button>`
-      ).join('');
-    }
-
-    zone.innerHTML = `
-      <div class="opponent-name">${gs.playerNames[pid]}</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">${cardsHtml}</div>
-      ${swapBtnHtml}
-      ${spyBtnHtml}
-    `;
+    const hand = gs.hands?.[pid] || [];
+    const grid = document.createElement('div');
+    grid.className = 'hand-grid';
+    hand.forEach((c, i) => {
+      let showFace = false;
+      const pa = pendingAction;
+      if (pa?.oppId === pid && pa?.oppPos === i) {
+        if ((pa.type === 'spy' && pa.step === 'revealed') ||
+            (pa.type === 'peekswap' && (pa.step === 'peek-done' || pa.step === 'pick-mine')) ||
+            (pa.type === 'kingswap' && (pa.step === 'peek-done' || pa.step === 'peek-mine' || pa.step === 'pick-mine' || pa.step === 'pick-opp-swap'))) {
+          showFace = true;
+        }
+      }
+      const el = makeCardEl(c, { faceDown: !showFace });
+      const pa2 = pendingAction;
+      if (myTurn && pa2) {
+        if ((pa2.type === 'spy' && pa2.step === 'pick-opp') ||
+            (pa2.type === 'peekswap' && pa2.step === 'pick-opp') ||
+            (pa2.type === 'kingswap' && pa2.step === 'pick-opp') ||
+            (pa2.type === 'kingswap' && pa2.step === 'pick-opp-swap') ||
+            (pa2.type === 'blindswap' && pa2.step === 'pick-opp')) {
+          el.classList.add('selectable');
+          el.onclick = () => handleOppCardClick(pid, i);
+        } else {
+          el.classList.add('not-selectable');
+        }
+      } else {
+        el.classList.add('not-selectable');
+      }
+      grid.appendChild(el);
+    });
+    zone.innerHTML = `<div class="opponent-name">${gs.playerNames[pid]}</div>`;
+    zone.appendChild(grid);
     oppArea.appendChild(zone);
   });
 
-  // Center piles
-  const deck = gs.deck || [];
+  // Deck
   const deckEl = document.getElementById('deck-pile');
-  deckEl.dataset.count = deck.length;
-  deckEl.style.opacity = deck.length === 0 ? '0.3' : '1';
-  deckEl.style.cursor = deck.length === 0 || !myTurn || gs.phase !== 'play' || gs.drawnCard ? 'default' : 'pointer';
+  deckEl.dataset.count = (gs.deck || []).length;
+  deckEl.style.opacity = (gs.deck || []).length === 0 ? '0.3' : '1';
+  deckEl.style.cursor = (myTurn && gs.phase === 'play' && !gs.drawnCard && !pendingAction) ? 'pointer' : 'default';
 
+  // Discard
   const discardArr = gs.discard || [];
-  const topDiscard = discardArr[discardArr.length - 1] || null;
-  const discardDisplay = document.getElementById('discard-pile-display');
-  if (topDiscard) {
-    const el = makeCardEl(topDiscard);
-    el.classList.add('not-selectable');
-    discardDisplay.innerHTML = '';
-    discardDisplay.appendChild(el);
+  const top = discardArr[discardArr.length - 1] || null;
+  const dd = document.getElementById('discard-pile-display');
+  if (top) {
+    const el = makeCardEl(top); el.classList.add('not-selectable');
+    dd.innerHTML = ''; dd.appendChild(el);
   } else {
-    discardDisplay.innerHTML = '<div class="discard-empty">+</div>';
+    dd.innerHTML = '<div class="discard-empty">+</div>';
   }
 
   // Drawn card
   const drawnArea = document.getElementById('drawn-card-area');
-  if (gs.drawnCard && myTurn) {
+  if (gs.drawnCard && myTurn && !pendingAction) {
     drawnArea.style.display = 'block';
-    const dEl = makeCardEl(gs.drawnCard);
-    dEl.style.cursor = 'default';
-    const dDisplay = document.getElementById('drawn-card-display');
-    dDisplay.innerHTML = '';
     const d = cardDisplay(gs.drawnCard);
-    dDisplay.className = 'card face-up' + (d.isRed ? ' red-suit' : '');
-    dDisplay.innerHTML = `
-      <span class="card-corner">${d.label}</span>
-      <span class="card-center">${d.suit}</span>
-      <span class="card-corner bottom">${d.label}</span>
-    `;
-    const power = cardPower(gs.drawnCard);
-    const powerBtn = document.getElementById('use-power-btn');
-    if (power) {
-      powerBtn.style.display = 'block';
-      powerBtn.textContent = power === 'peek' ? '👁 Peek' : power === 'spy' ? '🔍 Spy' : '🔄 Swap';
-    } else {
-      powerBtn.style.display = 'none';
-    }
-  } else {
-    drawnArea.style.display = 'none';
-  }
+    const dDisp = document.getElementById('drawn-card-display');
+    const p = cardPower(gs.drawnCard);
+    dDisp.className = 'card face-up' + (d.isRed ? ' red-suit' : '')
+      + (p === 'peek' ? ' peek-card' : p === 'spy' ? ' spy-card' : (p === 'blindswap' || p === 'peekswap') ? ' swap-card' : p === 'kingswap' ? ' king-card' : '');
+    dDisp.innerHTML = `<span class="card-corner">${d.label}</span><span class="card-center">${d.suit}</span><span class="card-corner bottom">${d.label}</span>`;
+    const pb = document.getElementById('use-power-btn');
+    if (p) {
+      pb.style.display = 'block';
+      pb.textContent = { peek:'👁 Peek Own', spy:'🔍 Spy Opp.', blindswap:'🔄 Blind Swap', peekswap:'👁🔄 Peek+Swap', kingswap:'👑 King Swap' }[p];
+    } else { pb.style.display = 'none'; }
+  } else { drawnArea.style.display = 'none'; }
 
-  // My cards
-  const myHand = gs.hands[myId] || [];
+  // My hand — 2×2
+  const myHand = gs.hands?.[myId] || [];
   const myCardsEl = document.getElementById('my-cards');
   myCardsEl.innerHTML = '';
   document.getElementById('my-name-label').textContent = myName + ' (you)';
@@ -895,157 +834,144 @@ function renderGame() {
 
   myHand.forEach((card, i) => {
     const known = myKnownCards.has(i);
-    let el;
-    if (known) {
-      el = makeCardEl(card); // face up, I know it
-    } else {
-      el = makeCardEl(card, { faceDown: true });
-    }
+    const pa = pendingAction;
+    const kingShowMine = pa?.type === 'kingswap' && (pa.step === 'peek-mine') && pa.myPos === i;
+    const el = (known || kingShowMine) ? makeCardEl(card) : makeCardEl(card, { faceDown: true });
 
-    // Handle click actions
-    if (gs.phase === 'initial-peek') {
-      if (!initialPeekDone) {
+    if (gs.phase === 'initial-peek' && !initialPeekDone) {
+      // Only allow bottom 2 (indices 2,3)
+      if (i === 2 || i === 3) {
         el.classList.add('selectable');
         el.onclick = () => doInitialPeek(i, card);
       } else {
         el.classList.add('not-selectable');
       }
     } else if (gs.phase === 'play' && myTurn) {
-      if (gs.drawnCard && !pendingAction) {
-        // Swap drawn with my card
-        el.classList.add('selectable');
-        el.title = 'Swap drawn card with this card';
+      const pa = pendingAction;
+      if (gs.drawnCard && !pa) {
+        el.classList.add('selectable'); el.title = 'Swap in drawn card';
         el.onclick = () => swapWithMyCard(i);
-      } else if (pendingAction?.type === 'peek') {
-        el.classList.add('selectable');
-        el.onclick = () => peekMyCard(i, card);
-      } else if (pendingAction?.type === 'swap' && swapMyCard === null) {
-        el.classList.add('selectable');
-        el.onclick = () => swapSelectMine(i);
-      } else if (pendingAction?.type === 'swap' && swapMyCard !== null && i === swapMyCard) {
-        el.classList.add('selected');
-      } else {
-        el.classList.add('not-selectable');
-      }
-    } else {
-      el.classList.add('not-selectable');
-    }
+      } else if (pa?.type === 'peek' && pa.step === 'pick') {
+        el.classList.add('selectable'); el.onclick = () => doPeekReveal(i, card);
+      } else if (pa?.type === 'blindswap' && pa.step === 'pick-mine') {
+        el.classList.add('selectable'); el.onclick = () => { pendingAction.myPos = i; pendingAction.step = 'pick-opp'; renderGame(); };
+      } else if (pa?.type === 'peekswap' && pa.step === 'pick-mine') {
+        el.classList.add('selectable'); el.onclick = () => doPeekswapPickMine(i);
+      } else if (pa?.type === 'kingswap' && pa.step === 'pick-mine') {
+        el.classList.add('selectable'); el.onclick = () => doKingswapPickMine(i);
+      } else { el.classList.add('not-selectable'); }
+      if (pa?.myPos === i) el.classList.add('selected');
+    } else { el.classList.add('not-selectable'); }
 
     myCardsEl.appendChild(el);
   });
 
-  // Help text
-  const helpEl = document.getElementById('help-text');
-  if (gs.phase === 'initial-peek') {
-    helpEl.textContent = `Peek at any 2 of your cards to memorize them (${2 - initialPeekCount} remaining)`;
-  } else if (!myTurn) {
-    helpEl.textContent = `Waiting for ${currentName}...`;
-  } else if (gs.drawnCard && !pendingAction) {
-    helpEl.textContent = '← Click Discard to discard, or click one of your cards to swap it';
-  } else if (pendingAction?.type === 'peek') {
-    helpEl.textContent = 'Click one of your cards to peek at it';
-  } else if (pendingAction?.type === 'spy') {
-    helpEl.textContent = 'Click an opponent\'s card button to spy on it';
-  } else if (pendingAction?.type === 'swap' && swapMyCard === null) {
-    helpEl.textContent = 'Select one of YOUR cards to swap...';
-  } else if (pendingAction?.type === 'swap' && swapMyCard !== null) {
-    helpEl.textContent = 'Now click an opponent\'s card to complete the swap';
-  } else if (!gs.drawnCard) {
-    helpEl.textContent = 'Draw a card from the deck, or call CABO if you think you have the lowest hand!';
-  }
+  // Help
+  document.getElementById('help-text').textContent = helpText(gs, myTurn, currentName);
 
-  // Cabo button
-  const caboBtn = document.getElementById('cabo-btn');
-  caboBtn.disabled = !myTurn || !!gs.caboCallerId || gs.phase !== 'play' || !!gs.drawnCard;
+  // Cabo btn
+  document.getElementById('cabo-btn').disabled =
+    !myTurn || !!gs.caboCallerId || gs.phase !== 'play' || !!gs.drawnCard || !!pendingAction;
 
   // Log
   const logPanel = document.getElementById('log-panel');
   logPanel.innerHTML = '';
-  const logs = gs.log || [];
-  logs.slice(-8).reverse().forEach(entry => {
+  (gs.log || []).slice(-5).reverse().forEach(e => {
     const div = document.createElement('div');
-    div.className = 'log-entry slide-in';
-    div.innerHTML = entry;
+    div.className = 'log-entry';
+    div.innerHTML = e;
     logPanel.appendChild(div);
   });
 
-  // Round end
-  if (gs.phase === 'round-end') {
-    showRoundEnd();
-  }
+  if (gs.phase === 'round-end') showRoundEnd();
+  if (gs.phase === 'game-over' && !document.getElementById('game-over-modal').classList.contains('open'))
+    showGameOverModal(gs.scores, gs.playerNames, gs.playerOrder);
 }
 
-// ── Tracked known cards (my peek memory) ──
-const myKnownCards = new Set();
+function helpText(gs, myTurn, currentName) {
+  if (gs.phase === 'initial-peek') return `Click your 2 BOTTOM cards to peek (${2-initialPeekCount} left)`;
+  if (!myTurn) return `Waiting for ${currentName}...`;
+  const pa = pendingAction;
+  if (!gs.drawnCard && !pa) return 'Draw a card, or call CABO!';
+  if (gs.drawnCard && !pa) return 'Discard or click one of your cards to swap it in';
+  if (!pa) return '';
+  const m = {
+    'peek:pick': '👁 Click one of YOUR cards to peek at it',
+    'spy:pick-opp': '🔍 Click an OPPONENT\'S card to spy on it',
+    'spy:revealed': '🔍 Peeked! Ending turn...',
+    'blindswap:pick-mine': '🔄 Pick YOUR card to swap',
+    'blindswap:pick-opp': '🔄 Pick an OPPONENT\'S card to swap with',
+    'peekswap:pick-opp': '👁🔄 Pick OPPONENT\'S card to peek at',
+    'peekswap:peek-done': '👁🔄 Now pick YOUR card to swap out',
+    'peekswap:pick-mine': '👁🔄 Pick YOUR card to swap out',
+    'kingswap:pick-opp': '👑 Pick OPPONENT\'S card to peek at',
+    'kingswap:peek-done': '👑 Now pick YOUR card to peek at',
+    'kingswap:pick-mine': '👑 Click YOUR card to peek at it',
+    'kingswap:peek-mine': '👑 Now pick OPPONENT\'S card to swap with yours',
+    'kingswap:pick-opp-swap': '👑 Pick OPPONENT\'S card to swap',
+  };
+  return m[`${pa.type}:${pa.step}`] || '';
+}
 
-// ── Initial Peek ──
+// ── Opponent card click router ──
+function handleOppCardClick(oppId, pos) {
+  const pa = pendingAction;
+  if (!pa) return;
+  if (pa.type === 'spy' && pa.step === 'pick-opp') doSpyReveal(oppId, pos);
+  else if (pa.type === 'peekswap' && pa.step === 'pick-opp') doPeekswapPickOpp(oppId, pos);
+  else if (pa.type === 'kingswap' && pa.step === 'pick-opp') doKingswapPickOpp(oppId, pos);
+  else if (pa.type === 'kingswap' && pa.step === 'pick-opp-swap') doKingswapSwap(oppId, pos);
+  else if (pa.type === 'blindswap' && pa.step === 'pick-opp') doBlindswapFinish(oppId, pos);
+}
+
+// ── Initial Peek (bottom 2 cards = index 2,3) ──
 function doInitialPeek(pos, card) {
   if (initialPeekCount >= 2 || initialPeekDone) return;
   initialPeekCount++;
-  myKnownCards.add(pos);
+  myKnownCards.set(pos, card);
+  renderGame();
+  // Auto-hide after 3s
+  setTimeout(() => { myKnownCards.delete(pos); renderGame(); }, 3000);
   if (initialPeekCount >= 2) {
     initialPeekDone = true;
-    // Mark myself ready
     update(ref(db, `rooms/${roomCode}/game/peekReady`), { [myId]: true });
-    // Check if all players peeked
     setTimeout(async () => {
       const snap = await get(ref(db, `rooms/${roomCode}/game/peekReady`));
       const ready = snap.val() || {};
-      const gs = gameState;
-      const allReady = gs.playerOrder.every(pid => ready[pid]);
-      if (allReady || isHost) {
+      if ((gameState.playerOrder || []).every(pid => ready[pid]))
         await update(ref(db, `rooms/${roomCode}/game`), { phase: 'play' });
-      }
     }, 500);
-    // Force move to play if host after 3s
-    if (isHost) {
-      setTimeout(async () => {
-        const snap = await get(ref(db, `rooms/${roomCode}/game/phase`));
-        if (snap.val() === 'initial-peek') {
-          await update(ref(db, `rooms/${roomCode}/game`), { phase: 'play' });
-        }
-      }, 5000);
-    }
+    if (isHost) setTimeout(async () => {
+      const snap = await get(ref(db, `rooms/${roomCode}/game/phase`));
+      if (snap.val() === 'initial-peek') await update(ref(db, `rooms/${roomCode}/game`), { phase: 'play' });
+    }, 10000);
   }
-  renderGame();
 }
 
-// ── Draw from Deck ──
+// ── Draw ──
 window.drawFromDeck = async function() {
-  if (!isMyTurn() || gameState.phase !== 'play' || gameState.drawnCard) return;
+  if (!isMyTurn() || gameState.phase !== 'play' || gameState.drawnCard || pendingAction) return;
   const gs = gameState;
-  if (!gs.deck || gs.deck.length === 0) return;
+  if (!gs.deck?.length) return;
   const deck = [...gs.deck];
   const drawn = deck.shift();
   await update(ref(db, `rooms/${roomCode}/game`), {
-    deck,
-    drawnCard: drawn,
-    log: addLog(gs.log, `<span class="name">${myName}</span> <span class="action">drew a card</span>`)
+    deck, drawnCard: drawn,
+    log: addLog(gs.log, `<span class="lname">${myName}</span> drew a card`)
   });
 };
 
-// ── Discard Drawn Card ──
+// ── Discard ──
 window.discardDrawnCard = async function() {
   if (!isMyTurn() || !gameState.drawnCard) return;
   const gs = gameState;
-  const discard = [...(gs.discard || []), gs.drawnCard];
-  const power = cardPower(gs.drawnCard);
   const d = cardDisplay(gs.drawnCard);
-
-  // Clear pending power actions if just discarding
-  pendingAction = null;
-  swapMyCard = null;
-
   const updates = {
     drawnCard: null,
-    discard,
-    log: addLog(gs.log, `<span class="name">${myName}</span> <span class="action">discarded ${d.label}${d.suit}</span>`)
+    discard: [...(gs.discard||[]), gs.drawnCard],
+    log: addLog(gs.log, `<span class="lname">${myName}</span> discarded ${d.label}${d.suit}`)
   };
-
-  // If discarding a power card, the power is NOT used (discard without using power)
-  // End turn
-  Object.assign(updates, nextTurnUpdates(gs));
-
+  Object.assign(updates, nextTurn(gs));
   await update(ref(db, `rooms/${roomCode}/game`), updates);
 };
 
@@ -1054,257 +980,245 @@ window.usePower = function() {
   if (!isMyTurn() || !gameState.drawnCard) return;
   const power = cardPower(gameState.drawnCard);
   if (!power) return;
-  pendingAction = { type: power, drawnCard: gameState.drawnCard };
+  pendingAction = { type: power, drawnCard: gameState.drawnCard, step: firstStep(power) };
   renderGame();
 };
 
-// ── Peek ──
-window.peekMyCard = async function(pos, card) {
-  if (pendingAction?.type !== 'peek') return;
-  myKnownCards.add(pos);
-  const gs = gameState;
-  const d = cardDisplay(card);
-  const discard = [...(gs.discard || []), pendingAction.drawnCard];
-  const pdCard = cardDisplay(pendingAction.drawnCard);
+function firstStep(p) {
+  return { peek:'pick', spy:'pick-opp', blindswap:'pick-mine', peekswap:'pick-opp', kingswap:'pick-opp' }[p] || 'pick';
+}
 
-  pendingAction = null;
+// ── Peek Own (7/8) ──
+function doPeekReveal(pos, card) {
+  myKnownCards.set(pos, card);
+  const d = cardDisplay(card);
+  showToast(`Card ${pos+1}: ${d.label}${d.suit} = ${card.value}pts`, 2500);
+  setTimeout(() => { myKnownCards.delete(pos); renderGame(); }, 2500);
+  const gs = gameState;
   const updates = {
     drawnCard: null,
-    discard,
-    log: addLog(gs.log, `<span class="name">${myName}</span> <span class="action">used Peek (${pdCard.label}${pdCard.suit})</span>`)
+    discard: [...(gs.discard||[]), pendingAction.drawnCard],
+    log: addLog(gs.log, `<span class="lname">${myName}</span> peeked at their own card`)
   };
-  Object.assign(updates, nextTurnUpdates(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-
-  // Show peek result
-  const d2 = cardDisplay(card);
-  showToast(`Card ${pos+1} is: ${d2.label}${d2.suit} (${card.value}pts)`, 2500);
-};
-
-window.cancelPeek = function() {
   pendingAction = null;
-  renderGame();
-};
+  Object.assign(updates, nextTurn(gs));
+  update(ref(db, `rooms/${roomCode}/game`), updates);
+}
 
-// ── Spy ──
-window.spyCard = async function(opponentId, cardPos) {
-  if (pendingAction?.type !== 'spy') return;
+// ── Spy (9/10) ──
+function doSpyReveal(oppId, oppPos) {
   const gs = gameState;
-  const card = gs.hands[opponentId][cardPos];
-  const opName = gs.playerNames[opponentId];
+  const card = gs.hands[oppId][oppPos];
   const d = cardDisplay(card);
-  const discard = [...(gs.discard || []), pendingAction.drawnCard];
-  const pdCard = cardDisplay(pendingAction.drawnCard);
-
-  pendingAction = null;
-  const updates = {
-    drawnCard: null,
-    discard,
-    log: addLog(gs.log, `<span class="name">${myName}</span> <span class="action">used Spy (${pdCard.label}${pdCard.suit})</span>`)
-  };
-  Object.assign(updates, nextTurnUpdates(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-  showToast(`${opName}'s Card ${cardPos+1}: ${d.label}${d.suit} (${card.value}pts)`, 2500);
-};
-
-window.cancelSpy = function() {
-  pendingAction = null;
+  const opName = gs.playerNames[oppId];
+  pendingAction = { ...pendingAction, step: 'revealed', oppId, oppPos };
   renderGame();
-};
+  showToast(`${opName} Card ${oppPos+1}: ${d.label}${d.suit} = ${card.value}pts`, 2500);
+  setTimeout(async () => {
+    const dc = pendingAction?.drawnCard || gs.drawnCard;
+    const updates = {
+      drawnCard: null,
+      discard: [...(gameState.discard||[]), dc],
+      log: addLog(gameState.log, `<span class="lname">${myName}</span> spied on ${opName}'s card`)
+    };
+    pendingAction = null;
+    Object.assign(updates, nextTurn(gameState));
+    await update(ref(db, `rooms/${roomCode}/game`), updates);
+  }, 2200);
+}
 
-// ── Swap ──
-window.swapSelectMine = function(pos) {
-  swapMyCard = pos;
-  renderGame();
-};
-
-window.swapSelectOpponent = async function(opponentId, cardPos) {
-  if (pendingAction?.type !== 'swap' || swapMyCard === null) return;
+// ── Blind Swap (J) ──
+async function doBlindswapFinish(oppId, oppPos) {
   const gs = gameState;
   const myHand = [...gs.hands[myId]];
-  const oppHand = [...gs.hands[opponentId]];
-  const temp = myHand[swapMyCard];
-  myHand[swapMyCard] = oppHand[cardPos];
-  oppHand[cardPos] = temp;
-
-  // Update known cards
-  myKnownCards.delete(swapMyCard); // now unknown (it was opponent's)
-  const opName = gs.playerNames[opponentId];
-  const discard = [...(gs.discard || []), pendingAction.drawnCard];
-  const pdCard = cardDisplay(pendingAction.drawnCard);
-
-  pendingAction = null;
-  swapMyCard = null;
-
+  const oppHand = [...gs.hands[oppId]];
+  const myPos = pendingAction.myPos;
+  [myHand[myPos], oppHand[oppPos]] = [oppHand[oppPos], myHand[myPos]];
+  myKnownCards.delete(myPos);
+  const opName = gs.playerNames[oppId];
   const updates = {
     drawnCard: null,
-    discard,
+    discard: [...(gs.discard||[]), pendingAction.drawnCard],
     [`hands/${myId}`]: myHand,
-    [`hands/${opponentId}`]: oppHand,
-    log: addLog(gs.log, `<span class="name">${myName}</span> <span class="action">swapped a card with ${opName}</span>`)
+    [`hands/${oppId}`]: oppHand,
+    log: addLog(gs.log, `<span class="lname">${myName}</span> blind-swapped with ${opName}`)
   };
-  Object.assign(updates, nextTurnUpdates(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-};
-
-window.cancelSwap = function() {
   pendingAction = null;
-  swapMyCard = null;
-  renderGame();
-};
+  Object.assign(updates, nextTurn(gs));
+  await update(ref(db, `rooms/${roomCode}/game`), updates);
+}
 
-// ── Swap drawn with my card ──
+// ── Peek+Swap (Q) ──
+function doPeekswapPickOpp(oppId, oppPos) {
+  const gs = gameState;
+  const card = gs.hands[oppId][oppPos];
+  const d = cardDisplay(card);
+  const opName = gs.playerNames[oppId];
+  pendingAction = { ...pendingAction, step: 'peek-done', oppId, oppPos };
+  showToast(`${opName} Card ${oppPos+1}: ${d.label}${d.suit} — now pick YOUR card to swap`, 3000);
+  renderGame();
+  setTimeout(() => { if (pendingAction) { pendingAction.step = 'pick-mine'; renderGame(); } }, 2200);
+}
+
+async function doPeekswapPickMine(myPos) {
+  const gs = gameState;
+  const myHand = [...gs.hands[myId]];
+  const oppHand = [...gs.hands[pendingAction.oppId]];
+  const oppPos = pendingAction.oppPos;
+  const oppCard = oppHand[oppPos];
+  [myHand[myPos], oppHand[oppPos]] = [oppHand[oppPos], myHand[myPos]];
+  myKnownCards.set(myPos, oppCard); // I know what I swapped in
+  const opName = gs.playerNames[pendingAction.oppId];
+  const updates = {
+    drawnCard: null,
+    discard: [...(gs.discard||[]), pendingAction.drawnCard],
+    [`hands/${myId}`]: myHand,
+    [`hands/${pendingAction.oppId}`]: oppHand,
+    log: addLog(gs.log, `<span class="lname">${myName}</span> peeked & swapped with ${opName}`)
+  };
+  pendingAction = null;
+  Object.assign(updates, nextTurn(gs));
+  await update(ref(db, `rooms/${roomCode}/game`), updates);
+}
+
+// ── King Swap (K) ──
+function doKingswapPickOpp(oppId, oppPos) {
+  const gs = gameState;
+  const card = gs.hands[oppId][oppPos];
+  const d = cardDisplay(card);
+  const opName = gs.playerNames[oppId];
+  pendingAction = { ...pendingAction, step: 'peek-done', oppId, oppPos };
+  showToast(`${opName} Card ${oppPos+1}: ${d.label}${d.suit} — now pick YOUR card to peek`, 3000);
+  renderGame();
+  setTimeout(() => { if (pendingAction) { pendingAction.step = 'pick-mine'; renderGame(); } }, 2200);
+}
+
+function doKingswapPickMine(myPos) {
+  const gs = gameState;
+  const myCard = gs.hands[myId][myPos];
+  const d = cardDisplay(myCard);
+  pendingAction = { ...pendingAction, step: 'peek-mine', myPos };
+  myKnownCards.set(myPos, myCard);
+  showToast(`Your Card ${myPos+1}: ${d.label}${d.suit} — pick OPPONENT card to swap`, 3000);
+  renderGame();
+  setTimeout(() => { if (pendingAction) { pendingAction.step = 'pick-opp-swap'; myKnownCards.delete(myPos); renderGame(); } }, 2200);
+}
+
+async function doKingswapSwap(oppId, oppPos) {
+  const gs = gameState;
+  const myHand = [...gs.hands[myId]];
+  const oppHand = [...gs.hands[oppId]];
+  const myPos = pendingAction.myPos;
+  const oppCard = oppHand[oppPos];
+  [myHand[myPos], oppHand[oppPos]] = [oppHand[oppPos], myHand[myPos]];
+  myKnownCards.set(myPos, oppCard);
+  const opName = gs.playerNames[oppId];
+  const updates = {
+    drawnCard: null,
+    discard: [...(gs.discard||[]), pendingAction.drawnCard],
+    [`hands/${myId}`]: myHand,
+    [`hands/${oppId}`]: oppHand,
+    log: addLog(gs.log, `<span class="lname">${myName}</span> used King swap with ${opName}`)
+  };
+  pendingAction = null;
+  Object.assign(updates, nextTurn(gs));
+  await update(ref(db, `rooms/${roomCode}/game`), updates);
+}
+
+// ── Swap drawn into hand ──
 window.swapWithMyCard = async function(pos) {
   if (!isMyTurn() || !gameState.drawnCard) return;
   const gs = gameState;
   const myHand = [...gs.hands[myId]];
   const oldCard = myHand[pos];
   myHand[pos] = gs.drawnCard;
-  const discard = [...(gs.discard || []), oldCard];
   const d = cardDisplay(gs.drawnCard);
-  const od = cardDisplay(oldCard);
-
-  myKnownCards.add(pos); // now I know this card
-  myKnownCards.delete(pos); // it's the drawn card I just saw
-
+  myKnownCards.set(pos, gs.drawnCard);
   const updates = {
     drawnCard: null,
-    discard,
+    discard: [...(gs.discard||[]), oldCard],
     [`hands/${myId}`]: myHand,
-    log: addLog(gs.log, `<span class="name">${myName}</span> <span class="action">swapped ${d.label}${d.suit} into their hand</span>`)
+    log: addLog(gs.log, `<span class="lname">${myName}</span> swapped ${d.label}${d.suit} into hand`)
   };
-  Object.assign(updates, nextTurnUpdates(gs));
+  Object.assign(updates, nextTurn(gs));
   await update(ref(db, `rooms/${roomCode}/game`), updates);
 };
 
 // ── Call CABO ──
 window.callCabo = async function() {
-  if (!isMyTurn() || gameState.caboCallerId || gameState.phase !== 'play') return;
+  if (!isMyTurn() || gameState.caboCallerId || gameState.phase !== 'play' || pendingAction) return;
   const gs = gameState;
-  // Everyone else gets 1 more turn
   const lastTurns = {};
-  gs.playerOrder.forEach((pid, idx) => {
-    if (pid !== myId) lastTurns[pid] = 1;
-  });
-
+  gs.playerOrder.forEach(pid => { if (pid !== myId) lastTurns[pid] = 1; });
   const updates = {
-    caboCallerId: myId,
-    lastTurns,
-    log: addLog(gs.log, `<span class="name">${myName}</span> <span class="action" style="color:var(--accent)">called CABO! 🎯</span>`)
+    caboCallerId: myId, lastTurns,
+    log: addLog(gs.log, `<span class="lname">${myName}</span> <span style="color:var(--accent)">called CABO! 🎯</span>`)
   };
-  Object.assign(updates, nextTurnUpdates(gs));
+  Object.assign(updates, nextTurn(gs));
   await update(ref(db, `rooms/${roomCode}/game`), updates);
 };
 
-// ── Advance Turn ──
-function nextTurnUpdates(gs) {
+function nextTurn(gs) {
   const order = gs.playerOrder;
-  const curIdx = order.indexOf(gs.currentTurn);
-  let nextIdx = (curIdx + 1) % order.length;
-  const nextPid = order[nextIdx];
-
-  // Check if cabo was called and we've gone around
+  const nextPid = order[(order.indexOf(gs.currentTurn) + 1) % order.length];
   if (gs.caboCallerId) {
-    const lastTurns = { ...(gs.lastTurns || {}) };
-    // Mark current player's last turn done
-    if (lastTurns[gs.currentTurn] !== undefined) {
-      lastTurns[gs.currentTurn]--;
-    }
-    // Check if all non-caller last turns done
-    const nonCallerIds = order.filter(pid => pid !== gs.caboCallerId);
-    const allDone = nonCallerIds.every(pid => 
-      lastTurns[pid] === undefined || lastTurns[pid] <= 0
-    );
-    if (allDone) {
-      return { currentTurn: nextPid, phase: 'round-end', lastTurns };
-    }
-    return { currentTurn: nextPid, lastTurns };
+    const lt = { ...(gs.lastTurns || {}) };
+    if (lt[gs.currentTurn] !== undefined) lt[gs.currentTurn]--;
+    const nonCaller = order.filter(pid => pid !== gs.caboCallerId);
+    const allDone = nonCaller.every(pid => !lt[pid] || lt[pid] <= 0);
+    if (allDone) return { currentTurn: nextPid, phase: 'round-end', lastTurns: lt };
+    return { currentTurn: nextPid, lastTurns: lt };
   }
-
   return { currentTurn: nextPid };
 }
 
 function addLog(existing, entry) {
   const logs = [...(existing || [])];
   logs.push(entry);
-  if (logs.length > 20) logs.shift();
+  if (logs.length > 25) logs.shift();
   return logs;
 }
 
 // ── Round End ──
 function showRoundEnd() {
+  if (document.getElementById('round-modal').classList.contains('open')) return;
   const gs = gameState;
   const results = gs.playerOrder.map(pid => {
     const hand = gs.hands[pid] || [];
-    const total = hand.reduce((s, c) => s + (c?.value || 0), 0);
+    const total = hand.reduce((s, c) => s + (c?.value ?? 0), 0);
     return { pid, name: gs.playerNames[pid], hand, total };
+  }).sort((a,b) => a.total - b.total);
+  const lowest = results[0].total;
+  const cabo = gs.caboCallerId;
+  const scored = results.map(r => {
+    let pts = r.total;
+    if (r.pid === cabo) pts = r.total === lowest ? 0 : r.total + 10;
+    return { ...r, pts };
   });
-
-  results.sort((a, b) => a.total - b.total);
-  const lowestScore = results[0].total;
-  const caboCallerId = gs.caboCallerId;
-
-  const scoringResults = results.map(r => {
-    let roundPoints = r.total;
-    if (r.pid === caboCallerId) {
-      if (r.total <= lowestScore && r.total === results[0].total) {
-        roundPoints = 0; // Cabo caller wins - 0 points
-      } else {
-        roundPoints = r.total + 10; // Penalty
-      }
-    }
-    return { ...r, roundPoints };
-  });
-
   const newScores = { ...(gs.scores || {}) };
-  scoringResults.forEach(r => {
-    newScores[r.pid] = (newScores[r.pid] || 0) + r.roundPoints;
-  });
-
-  // Check winner (first to 100 loses, or play N rounds)
+  scored.forEach(r => { newScores[r.pid] = (newScores[r.pid] || 0) + r.pts; });
   const gameOver = Object.values(newScores).some(s => s >= 100);
-
   let html = '<div class="score-table">';
-  scoringResults.forEach(r => {
-    const d0 = cardDisplay(r.hand[0]);
-    const d1 = cardDisplay(r.hand[1]);
-    const d2 = cardDisplay(r.hand[2]);
-    const d3 = cardDisplay(r.hand[3]);
-    const isCabo = r.pid === caboCallerId;
-    html += `<div class="score-row ${r.roundPoints === 0 ? 'winner' : ''}">
-      <span>${r.name}${isCabo ? ' 📣' : ''}</span>
-      <span>${r.roundPoints > 0 ? '+' : ''}${r.roundPoints} pts (total: ${newScores[r.pid]})</span>
+  scored.forEach(r => {
+    const handStr = r.hand.map(c => { const d = cardDisplay(c); return `${d.label}${d.suit}(${c.value})`; }).join(' ');
+    html += `<div class="score-row ${r.pts === 0 ? 'winner' : ''}">
+      <span style="font-size:10px">${r.name}${r.pid===cabo?' 📣':''}: ${handStr}</span>
+      <span style="white-space:nowrap">+${r.pts}→${newScores[r.pid]}</span>
     </div>`;
   });
   html += '</div>';
-
   document.getElementById('round-modal-content').innerHTML = html;
-  document.getElementById('next-round-btn').style.display = isHost ? 'block' : 'none';
+  document.getElementById('next-round-btn').style.display = (isHost && !gameOver) ? 'block' : 'none';
   document.getElementById('round-modal').classList.add('open');
-
-  if (isHost && !gameOver) {
-    // Store new scores
-    update(ref(db, `rooms/${roomCode}/game`), { scores: newScores });
-  }
-  if (isHost && gameOver) {
-    update(ref(db, `rooms/${roomCode}/game`), { scores: newScores, phase: 'game-over' });
-    showGameOver(newScores, gs.playerNames, gs.playerOrder);
-  }
+  if (isHost) update(ref(db, `rooms/${roomCode}/game`), { scores: newScores, phase: gameOver ? 'game-over' : 'round-end' });
 }
 
-function showGameOver(scores, names, order) {
+function showGameOverModal(scores, names, order) {
   document.getElementById('round-modal').classList.remove('open');
-  const sorted = order.map(pid => ({ pid, name: names[pid], score: scores[pid] }))
-    .sort((a, b) => a.score - b.score);
-  const winner = sorted[0];
-
-  document.getElementById('gameover-title').textContent = `${winner.name} Wins! 🎉`;
+  const sorted = order.map(pid => ({ pid, name: names[pid], score: scores[pid] })).sort((a,b) => a.score - b.score);
+  document.getElementById('gameover-title').textContent = `${sorted[0].name} Wins! 🎉`;
   let html = '<div class="score-table">';
-  sorted.forEach((p, i) => {
-    html += `<div class="score-row ${i === 0 ? 'winner' : ''}">
-      <span>${i+1}. ${p.name}</span><span>${p.score} pts</span>
-    </div>`;
-  });
+  sorted.forEach((p,i) => { html += `<div class="score-row ${i===0?'winner':''}"><span>${i+1}. ${p.name}</span><span>${p.score}pts</span></div>`; });
   html += '</div>';
   document.getElementById('gameover-content').innerHTML = html;
   document.getElementById('game-over-modal').classList.add('open');
@@ -1313,77 +1227,51 @@ function showGameOver(scores, names, order) {
 window.nextRound = async function() {
   if (!isHost) return;
   const gs = gameState;
-  const players = gs.playerOrder;
   const deck = shuffle(buildDeck());
   const hands = {};
-  players.forEach(pid => {
-    hands[pid] = [deck.shift(), deck.shift(), deck.shift(), deck.shift()];
-  });
+  gs.playerOrder.forEach(pid => { hands[pid] = [deck.shift(), deck.shift(), deck.shift(), deck.shift()]; });
   const discard = deck.shift();
-  const newGs = {
-    ...gs,
-    deck,
-    discard: [discard],
-    hands,
-    caboCallerId: null,
-    lastTurns: {},
-    phase: 'initial-peek',
-    drawnCard: null,
-    round: (gs.round || 1) + 1,
-    log: []
-  };
+  const newGs = { ...gs, deck, discard:[discard], hands, caboCallerId:null, lastTurns:{},
+    phase:'initial-peek', drawnCard:null, round:(gs.round||1)+1, log:[] };
   delete newGs.peekReady;
   await set(ref(db, `rooms/${roomCode}/game`), newGs);
-
-  // Reset local state
-  myKnownCards.clear();
-  initialPeekCount = 0;
-  initialPeekDone = false;
-  pendingAction = null;
-  swapMyCard = null;
+  myKnownCards.clear(); initialPeekCount=0; initialPeekDone=false; pendingAction=null;
   document.getElementById('round-modal').classList.remove('open');
 };
 
-window.closeRoundModal = function() {
-  document.getElementById('round-modal').classList.remove('open');
-};
+window.closeRoundModal = function() { document.getElementById('round-modal').classList.remove('open'); };
+window.playAgain = function() { location.reload(); };
 
-window.playAgain = function() {
-  location.reload();
+// ── Chat ──
+window.sendChat = async function() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text || !roomCode) return;
+  input.value = '';
+  await set(push(ref(db, `rooms/${roomCode}/chat`)), { id: myId, name: myName, text, ts: Date.now() });
 };
 
 // ── Toast ──
-function showToast(msg, duration = 2000) {
+function showToast(msg, duration=2000) {
   const t = document.createElement('div');
-  t.style.cssText = `
-    position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
-    background:var(--surface2);border:1px solid var(--accent);
-    color:var(--accent);padding:10px 20px;border-radius:8px;
-    font-size:13px;z-index:999;animation:slideIn 0.3s ease;
-    font-family:'DM Mono',monospace;
-  `;
+  t.style.cssText = `position:fixed;bottom:55px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--accent);color:var(--accent);padding:8px 16px;border-radius:7px;font-size:11px;z-index:999;font-family:'DM Mono',monospace;white-space:nowrap;pointer-events:none;`;
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), duration);
 }
 
-// ── Init ──
-document.getElementById('player-name-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') setName();
-});
-document.getElementById('join-code-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') joinRoom();
-});
-document.getElementById('join-code-input').addEventListener('input', e => {
-  e.target.value = e.target.value.toUpperCase();
-});
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Hide loading after 1s init
+// ── Bindings ──
+document.getElementById('player-name-input').addEventListener('keydown', e => { if(e.key==='Enter') setName(); });
+document.getElementById('join-code-input').addEventListener('keydown', e => { if(e.key==='Enter') joinRoom(); });
+document.getElementById('join-code-input').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
+document.getElementById('chat-input').addEventListener('keydown', e => { if(e.key==='Enter') sendChat(); });
+
 setTimeout(() => {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('lobby').style.display = 'flex';
-}, 1000);
-
+}, 700);
 </script>
 </body>
 </html>
