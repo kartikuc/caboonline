@@ -23,6 +23,7 @@ let myId = null, myName = '', roomCode = null;
 let gameState = null, isHost = false;
 let pendingAction = null;
 const myKnownCards = new Map();
+const peekMemory = new Map(); // cards seen during initial peek, copied to myKnownCards when play starts
 let lastEventId = null;
 let dealAnimPlayed = false;
 let renderingPaused = false;
@@ -369,11 +370,12 @@ window.markReady = async function () {
     await sleep(240);
   }
 
-  // Now store known cards (face-down in board but remembered)
-  myKnownCards.set(1, card1);
-  myKnownCards.set(2, card2);
+  // Store peeked cards in peekMemory — NOT myKnownCards
+  // myKnownCards would cause renderMyHand to show them face-up again
+  peekMemory.set(1, card1);
+  peekMemory.set(2, card2);
 
-  // Re-enable renders
+  // Re-enable renders — cards will now render face-down correctly
   renderingPaused = false;
 
   // Signal Firebase — the onValue loop will detect all-ready and host starts game
@@ -448,6 +450,11 @@ function renderGame() {
   } else {
     tl.textContent = myTurn ? '✦ Your Turn' : `${currentName}'s Turn`;
     tl.style.color = myTurn ? 'var(--accent2)' : 'var(--text)';
+    // Copy peek memory into known cards once game starts
+    if (peekMemory.size > 0) {
+      peekMemory.forEach((card, pos) => myKnownCards.set(pos, card));
+      peekMemory.clear();
+    }
   }
   document.getElementById('round-label').textContent = `Round ${gs.round || 1}`;
 
@@ -882,6 +889,7 @@ window.nextRound = async function () {
   const gs = createNextRoundState(gameState);
   await set(ref(db, `rooms/${roomCode}/game`), gs);
   myKnownCards.clear();
+  peekMemory.clear();
   pendingAction = null;
   lastEventId = null;
   dealAnimPlayed = false;
