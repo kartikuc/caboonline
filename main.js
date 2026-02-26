@@ -25,6 +25,7 @@ let pendingAction = null;
 const myKnownCards = new Map();
 let lastEventId = null;
 let dealAnimPlayed = false;
+let renderingPaused = false;
 
 // ─── LOBBY ────────────────────────────────────────────────────────────────────
 function showScreen(id) {
@@ -344,7 +345,6 @@ window.markReady = async function () {
   btn.disabled = true;
   btn.textContent = 'Waiting for others...';
 
-  // Store memory of inner cards BEFORE hiding overlay
   const gs = gameState;
   myKnownCards.set(1, gs.hands?.[myId]?.[1]);
   myKnownCards.set(2, gs.hands?.[myId]?.[2]);
@@ -352,27 +352,40 @@ window.markReady = async function () {
   // Hide overlay
   document.getElementById('peek-overlay').style.display = 'none';
 
-  // Flip the in-board inner cards (pos 1 & 2) face-down with animation
-  const myEls = getCardEls(myId, myId);
+  // Pause Firebase re-renders so our flip animation isn't overwritten mid-flight
+  renderingPaused = true;
+
+  // Grab the current card elements directly from the DOM
+  const myCardsEl = document.getElementById('my-cards');
+  const cardEls = [...myCardsEl.querySelectorAll('.card-slot')];
+
   for (const pos of [1, 2]) {
-    const el = myEls[pos];
-    if (el) {
-      const img = el.querySelector('.card-img');
-      const card = gs.hands?.[myId]?.[pos];
-      // Ensure face is showing first so the flip looks intentional
-      if (img && card) img.src = cardImageUrl(card);
-      el.style.transition = 'transform 0.3s ease';
-      el.style.transform = 'rotateY(90deg)';
-      await sleep(160);
-      if (img) img.src = 'https://deckofcardsapi.com/static/img/back.png';
-      el.style.transform = 'rotateY(0deg)';
-      await sleep(220);
-    }
+    const el = cardEls[pos];
+    if (!el) continue;
+    const img = el.querySelector('.card-img');
+    const card = gs.hands?.[myId]?.[pos];
+
+    // First make sure it's showing the face
+    if (img && card) img.src = cardImageUrl(card);
+    el.style.transition = 'transform 0.32s ease';
+
+    // Rotate to edge (hidden)
+    el.style.transform = 'rotateY(90deg)';
+    await sleep(170);
+
+    // Swap to back image at the halfway point
+    if (img) img.src = 'https://deckofcardsapi.com/static/img/back.png';
+
+    // Rotate back to face the player (now showing back)
+    el.style.transform = 'rotateY(0deg)';
+    await sleep(220);
   }
 
-  // Signal ready to Firebase
+  // Resume renders, then signal Firebase
+  renderingPaused = false;
+
+  // Signal ready to Firebase — renderGame's onValue will detect all-ready
   await update(ref(db, `rooms/${roomCode}/game/peekReady`), { [myId]: true });
-  // The onValue renderGame loop detects when ALL players ready → host starts game
 };
 
 // When peekReady changes, re-render waiting list
@@ -423,7 +436,7 @@ const isMyTurn = () => gameState?.currentTurn === myId;
 
 // ─── MAIN RENDER ─────────────────────────────────────────────────────────────
 function renderGame() {
-  if (!gameState) return;
+  if (!gameState || renderingPaused) return;
   const gs = gameState;
   const myTurn = isMyTurn();
   const currentName = gs.playerNames?.[gs.currentTurn] || '?';
