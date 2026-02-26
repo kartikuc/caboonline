@@ -170,6 +170,11 @@ function initGame() {
 // ─── DEALING ANIMATION ────────────────────────────────────────────────────────
 async function runDealingAnimation() {
   const gs = gameState;
+
+  // Pause renderGame for the entire dealing + peek sequence
+  // so Firebase onValue updates don't wipe our DOM mid-animation
+  renderingPaused = true;
+
   // Render shell with all cards hidden
   renderGameShell(gs);
   await sleep(300);
@@ -178,7 +183,6 @@ async function runDealingAnimation() {
   const allPlayers = gs.playerOrder || [];
 
   // PHASE 1: Deal outer cards (pos 0 and 3) face-down to all players
-  // Stagger: left card then right card, rotating through players
   for (const posIdx of [0, 3]) {
     for (let i = 0; i < allPlayers.length; i++) {
       const pid = allPlayers[i];
@@ -197,7 +201,7 @@ async function runDealingAnimation() {
 
   await sleep(400);
 
-  // PHASE 2: Deal inner cards (pos 1 and 2) to all players
+  // PHASE 2: Deal inner cards (pos 1 and 2) to all players face-down
   for (const posIdx of [1, 2]) {
     for (let i = 0; i < allPlayers.length; i++) {
       const pid = allPlayers[i];
@@ -216,41 +220,28 @@ async function runDealingAnimation() {
 
   await sleep(500);
 
-  // PHASE 3: Flip MY inner cards face-up for the peek
+  // PHASE 3: Flip MY inner cards face-up so the player can peek
   const myHand = gs.hands?.[myId] || [];
-  const myEls = getCardEls(myId, myId);
+  const myCardsEl = document.getElementById('my-cards');
+  const myCardEls = [...myCardsEl.querySelectorAll('.card-slot')];
 
-  // Flip card at position 1 face-up
-  if (myEls[1] && myHand[1]) {
-    const img = myEls[1].querySelector('.card-img');
-    if (img) {
-      myEls[1].style.transition = 'transform 0.3s';
-      myEls[1].style.transform = 'rotateY(90deg)';
-      await sleep(160);
-      img.src = cardImageUrl(myHand[1]);
-      myEls[1].style.transform = 'rotateY(0deg)';
-      await sleep(320);
-    }
-  }
-
-  await sleep(150);
-
-  // Flip card at position 2 face-up
-  if (myEls[2] && myHand[2]) {
-    const img = myEls[2].querySelector('.card-img');
-    if (img) {
-      myEls[2].style.transition = 'transform 0.3s';
-      myEls[2].style.transform = 'rotateY(90deg)';
-      await sleep(160);
-      img.src = cardImageUrl(myHand[2]);
-      myEls[2].style.transform = 'rotateY(0deg)';
-      await sleep(320);
-    }
+  for (const pos of [1, 2]) {
+    const el = myCardEls[pos];
+    const card = myHand[pos];
+    if (!el || !card) continue;
+    const img = el.querySelector('.card-img');
+    el.style.transition = 'transform 0.3s';
+    el.style.transform = 'rotateY(90deg)';
+    await sleep(160);
+    if (img) img.src = cardImageUrl(card);
+    el.style.transform = 'rotateY(0deg)';
+    await sleep(340);
+    if (pos === 1) await sleep(150);
   }
 
   await sleep(300);
 
-  // Show the peek overlay
+  // Show peek overlay — renderingPaused stays TRUE until markReady completes
   showPeekOverlay(myHand[1], myHand[2]);
   renderPeekWaiting(gs);
 }
@@ -346,45 +337,46 @@ window.markReady = async function () {
   btn.textContent = 'Waiting for others...';
 
   const gs = gameState;
-  myKnownCards.set(1, gs.hands?.[myId]?.[1]);
-  myKnownCards.set(2, gs.hands?.[myId]?.[2]);
+  const card1 = gs.hands?.[myId]?.[1];
+  const card2 = gs.hands?.[myId]?.[2];
 
   // Hide overlay
   document.getElementById('peek-overlay').style.display = 'none';
 
-  // Pause Firebase re-renders so our flip animation isn't overwritten mid-flight
+  // Pause re-renders for the duration of the flip animation
   renderingPaused = true;
 
-  // Grab the current card elements directly from the DOM
+  // Grab card elements fresh from DOM (the dealing anim left them face-up)
   const myCardsEl = document.getElementById('my-cards');
   const cardEls = [...myCardsEl.querySelectorAll('.card-slot')];
 
-  for (const pos of [1, 2]) {
+  for (const [pos, card] of [[1, card1], [2, card2]]) {
     const el = cardEls[pos];
     if (!el) continue;
     const img = el.querySelector('.card-img');
-    const card = gs.hands?.[myId]?.[pos];
 
-    // First make sure it's showing the face
+    // Make sure face is visible before flipping (in case it wasn't already)
     if (img && card) img.src = cardImageUrl(card);
+    await sleep(60);
+
     el.style.transition = 'transform 0.32s ease';
-
-    // Rotate to edge (hidden)
     el.style.transform = 'rotateY(90deg)';
-    await sleep(170);
+    await sleep(180);
 
-    // Swap to back image at the halfway point
+    // Swap image at the midpoint
     if (img) img.src = 'https://deckofcardsapi.com/static/img/back.png';
-
-    // Rotate back to face the player (now showing back)
     el.style.transform = 'rotateY(0deg)';
-    await sleep(220);
+    await sleep(240);
   }
 
-  // Resume renders, then signal Firebase
+  // Now store known cards (face-down in board but remembered)
+  myKnownCards.set(1, card1);
+  myKnownCards.set(2, card2);
+
+  // Re-enable renders
   renderingPaused = false;
 
-  // Signal ready to Firebase — renderGame's onValue will detect all-ready
+  // Signal Firebase — the onValue loop will detect all-ready and host starts game
   await update(ref(db, `rooms/${roomCode}/game/peekReady`), { [myId]: true });
 };
 
