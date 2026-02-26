@@ -4,448 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CABO — Online Card Game</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Space+Grotesk:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap');
-
-  :root {
-    --bg: #080810;
-    --surface: #0f0f1a;
-    --surface2: #161624;
-    --surface3: #1e1e30;
-    --border: #252538;
-    --border2: #2e2e48;
-    --accent: #c8a96e;
-    --accent2: #e8d4a0;
-    --accent-glow: rgba(200,169,110,0.25);
-    --red: #d94f4f;
-    --green: #4aab72;
-    --blue: #4a88d4;
-    --purple: #8855cc;
-    --text: #e8e8f0;
-    --muted: #7a7a9a;
-    --muted2: #5a5a7a;
-    --card-w: 68px;
-    --card-h: 96px;
-    --card-radius: 9px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; background: var(--bg); }
-  body { color: var(--text); font-family: 'Space Grotesk', sans-serif; height: 100vh; }
-
-  /* ─── BG TEXTURE ─── */
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(200,169,110,0.06) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 20% 100%, rgba(85,99,220,0.04) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
-  }
-
-  /* ─── LOBBY ─── */
-  #lobby {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    height: 100vh; gap: 28px; padding: 24px; position: relative; z-index: 1;
-    overflow-y: auto;
-  }
-  .logo-wrap { text-align: center; }
-  .logo {
-    font-family: 'Playfair Display', serif; font-size: clamp(56px, 10vw, 96px);
-    font-weight: 900; letter-spacing: 0.18em; color: var(--accent);
-    text-shadow: 0 0 80px rgba(200,169,110,0.35), 0 2px 0 rgba(0,0,0,0.5);
-    line-height: 1;
-  }
-  .logo-sub {
-    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.55em;
-    color: var(--muted); margin-top: 8px; text-transform: uppercase;
-  }
-  .lobby-box {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 28px; width: 100%; max-width: 400px;
-    display: flex; flex-direction: column; gap: 16px;
-    box-shadow: 0 4px 40px rgba(0,0,0,0.4);
-  }
-  .lobby-box h2 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent2); }
-  label { font-size: 11px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px; }
-  input[type=text] {
-    width: 100%; padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 8px; color: var(--text); font-family: 'Space Grotesk', sans-serif;
-    font-size: 15px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-  .btn {
-    padding: 11px 20px; border-radius: 9px; border: none;
-    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em;
-  }
-  .btn-primary { background: var(--accent); color: #0a0805; }
-  .btn-primary:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(200,169,110,0.3); }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-  .btn.loading { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
-  .btn.loading::after {
-    content: ''; display: inline-block; width: 10px; height: 10px;
-    border: 2px solid currentColor; border-top-color: transparent;
-    border-radius: 50%; animation: spin 0.7s linear infinite; margin-left: 8px; vertical-align: middle;
-  }
-  .divider { display: flex; align-items: center; gap: 10px; color: var(--muted2); font-size: 11px; }
-  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .room-code-display { background: var(--surface2); border: 1px dashed rgba(200,169,110,0.5); border-radius: 10px; padding: 16px; text-align: center; }
-  .room-code-display .code { font-size: 32px; letter-spacing: 0.4em; color: var(--accent); font-family: 'Playfair Display', serif; font-weight: 700; }
-  .room-code-display .hint { font-size: 11px; color: var(--muted); margin-top: 5px; }
-  .player-list { display: flex; flex-direction: column; gap: 6px; }
-  .player-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 13px; background: var(--surface2); border-radius: 8px;
-    border: 1px solid var(--border); font-size: 13px;
-  }
-  .player-item.me { border-color: rgba(200,169,110,0.4); }
-  .player-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
-  .player-item .host-badge { margin-left: auto; font-size: 10px; color: var(--accent); font-family: 'DM Mono', monospace; }
-  .power-legend { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
-  .pl-item { padding: 3px 8px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); font-size: 10px; font-family: 'DM Mono', monospace; }
-  .pl-peek { border-color: rgba(74,171,114,0.4); color: #4aab72; }
-  .pl-spy { border-color: rgba(74,136,212,0.4); color: #4a88d4; }
-  .pl-swap { border-color: rgba(136,85,204,0.4); color: #8855cc; }
-  .pl-king { border-color: rgba(200,169,110,0.4); color: var(--accent); }
-
-  /* ─── GAME SHELL ─── */
-  #game { display: none; height: 100vh; flex-direction: column; overflow: hidden; position: relative; z-index: 1; }
-
-  .game-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 18px; background: var(--surface);
-    border-bottom: 1px solid var(--border); flex-shrink: 0; height: 48px;
-  }
-  .game-title { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); letter-spacing: 0.15em; }
-  .turn-info { text-align: center; }
-  #turn-label { font-size: 14px; font-weight: 600; }
-  #round-label { font-size: 11px; color: var(--muted); margin-top: 1px; font-family: 'DM Mono', monospace; }
-
-  .score-strip {
-    display: flex; gap: 6px; padding: 6px 14px; background: var(--surface2);
-    border-bottom: 1px solid var(--border); overflow-x: auto; flex-shrink: 0;
-  }
-  .score-badge {
-    display: flex; flex-direction: column; align-items: center;
-    padding: 4px 14px; background: var(--surface); border-radius: 8px;
-    border: 1px solid var(--border); min-width: 76px; flex-shrink: 0; gap: 1px;
-    transition: border-color 0.3s;
-  }
-  .score-badge.active-player { border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-  .score-badge .sname { color: var(--muted); font-size: 11px; overflow: hidden; white-space: nowrap; max-width: 80px; text-overflow: ellipsis; }
-  .score-badge .sval { color: var(--text); font-size: 18px; font-family: 'Playfair Display', serif; }
-
-  .game-main { flex: 1; display: flex; overflow: hidden; min-height: 0; }
-
-  /* ─── BOARD ─── */
-  .game-board {
-    flex: 1; display: flex; flex-direction: column;
-    gap: 10px; padding: 10px 14px; overflow-y: auto; min-height: 0;
-    align-items: center;
-  }
-
-  .opponents-area { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; width: 100%; }
-  .opponent-zone {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px 14px; min-width: 160px;
-    display: flex; flex-direction: column; gap: 8px; align-items: center;
-    transition: border-color 0.3s, box-shadow 0.3s;
-  }
-  .opponent-zone.active-turn { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
-  .opponent-name { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 0.06em; }
-
-  /* ─── CENTER AREA ─── */
-  .center-area {
-    display: flex; align-items: center; justify-content: center;
-    gap: 24px; flex-wrap: wrap; width: 100%;
-  }
-  .pile-container { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .pile-label { font-size: 10px; letter-spacing: 0.14em; color: var(--muted2); text-transform: uppercase; font-family: 'DM Mono', monospace; }
-
-  /* ─── CARD ─── */
-  .card {
-    width: var(--card-w); height: var(--card-h);
-    border-radius: var(--card-radius);
-    position: relative; user-select: none; flex-shrink: 0;
-    cursor: pointer;
-    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease;
-    transform-style: preserve-3d;
-  }
-  .card-inner {
-    width: 100%; height: 100%; position: relative;
-    transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
-    border-radius: var(--card-radius);
-  }
-  .card.flipped .card-inner { transform: rotateY(180deg); }
-
-  .card-face, .card-back {
-    position: absolute; inset: 0; border-radius: var(--card-radius);
-    backface-visibility: hidden; -webkit-backface-visibility: hidden;
-  }
-
-  /* Back design */
-  .card-back {
-    background: linear-gradient(145deg, #1a1a2e 0%, #22224a 40%, #1a1a2e 100%);
-    border: 1px solid #2e2e50;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden;
-  }
-  .card-back::before {
-    content: ''; position: absolute; inset: 5px;
-    border: 1px solid rgba(200,169,110,0.2); border-radius: 5px;
-  }
-  .card-back::after {
-    content: '✦'; color: rgba(200,169,110,0.25); font-size: 22px;
-  }
-
-  /* Face design */
-  .card-face {
-    background: #faf6f0;
-    border: 1px solid #d0c8bc;
-    display: flex; flex-direction: column;
-    justify-content: space-between; padding: 4px 5px;
-    transform: rotateY(180deg);
-    overflow: hidden;
-  }
-  .card-face.red { color: #c0272d; }
-  .card-face.black { color: #1a1a1a; }
-
-  .cf-corner { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; }
-  .cf-corner.bot { align-items: flex-end; transform: rotate(180deg); }
-  .cf-rank { font-size: 13px; font-weight: 800; font-family: 'Playfair Display', serif; }
-  .cf-suit { font-size: 10px; line-height: 1; }
-
-  .cf-center {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    font-size: 28px; line-height: 1;
-  }
-  .cf-center.pips {
-    display: grid; font-size: 10px; padding: 2px;
-    align-items: center; justify-items: center;
-  }
-
-  /* Special power borders */
-  .card-face.peek-power { background: linear-gradient(135deg, #faf6f0, #f0fff4); }
-  .card-face.peek-power::after { content: ''; position: absolute; inset: 0; border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(74,171,114,0.8); pointer-events: none; }
-  .card-face.spy-power::after { content: ''; position: absolute; inset: 0; border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(74,136,212,0.8); pointer-events: none; }
-  .card-face.swap-power::after { content: ''; position: absolute; inset: 0; border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(136,85,204,0.8); pointer-events: none; }
-  .card-face.king-power::after { content: ''; position: absolute; inset: 0; border-radius: 8px; box-shadow: inset 0 0 0 2px rgba(200,169,110,0.9); pointer-events: none; }
-
-  .card:hover:not(.not-selectable) { transform: translateY(-5px); box-shadow: 0 10px 24px rgba(0,0,0,0.6); }
-  .card.selected { transform: translateY(-9px) !important; }
-  .card.selected .card-face { box-shadow: 0 0 0 2px var(--accent) !important; }
-  .card.selectable:hover .card-back { border-color: var(--accent); }
-  .card.not-selectable { cursor: default; }
-  .card.not-selectable:hover { transform: none !important; box-shadow: none !important; }
-
-  /* Card slide animation */
-  @keyframes slideInFromDeck {
-    from { transform: translateX(-120px) translateY(-40px) scale(0.8); opacity: 0; }
-    to { transform: translateX(0) translateY(0) scale(1); opacity: 1; }
-  }
-  @keyframes slideToDiscard {
-    from { transform: translateX(0) translateY(0) scale(1); opacity: 1; }
-    to { transform: translateX(120px) translateY(-40px) scale(0.85); opacity: 0; }
-  }
-  .card.dealing { animation: dealIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards; }
-
-  /* Hand rows */
-  .hand-row { display: flex; gap: 6px; flex-wrap: nowrap; justify-content: center; }
-
-  /* Deck */
-  .deck-card .card-back { cursor: pointer; }
-  .deck-count {
-    position: absolute; bottom: 4px; right: 5px;
-    font-size: 9px; color: rgba(200,169,110,0.6); font-family: 'DM Mono', monospace;
-    z-index: 1; pointer-events: none;
-  }
-  .discard-empty {
-    width: var(--card-w); height: var(--card-h); border-radius: var(--card-radius);
-    border: 2px dashed var(--border2); display: flex; align-items: center;
-    justify-content: center; color: var(--border2); font-size: 22px;
-  }
-
-  /* ─── MY AREA ─── */
-  .my-area {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 12px 16px;
-    display: flex; flex-direction: column; gap: 8px; align-items: center;
-    transition: border-color 0.3s, box-shadow 0.3s; width: 100%;
-  }
-  .my-area.my-turn { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
-
-  /* ─── DRAWN CARD AREA ─── */
-  .drawn-area {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
-    padding: 10px 14px; background: var(--surface2); border-radius: 10px;
-    border: 1px dashed var(--border2);
-  }
-  .drawn-area-label { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
-
-  /* ─── SLIDE SWAP OVERLAY ─── */
-  .swap-overlay-card {
-    position: fixed; z-index: 400; pointer-events: none;
-    width: var(--card-w); height: var(--card-h);
-    border-radius: var(--card-radius);
-  }
-  @keyframes swapFly {
-    0% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-
-  /* ─── LOG ─── */
-  .log-panel {
-    max-height: 52px; overflow-y: auto; width: 100%;
-    display: flex; flex-direction: column-reverse; gap: 2px;
-  }
-  .log-entry { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .log-entry .lname { color: var(--accent); }
-
-  /* ─── CHAT ─── */
-  .chat-panel {
-    width: 210px; flex-shrink: 0; display: flex; flex-direction: column;
-    border-left: 1px solid var(--border); background: var(--surface); overflow: hidden;
-  }
-  .chat-header { padding: 9px 13px; border-bottom: 1px solid var(--border); font-size: 11px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; flex-shrink: 0; font-family: 'DM Mono', monospace; }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
-  .chat-msg { font-size: 12px; line-height: 1.4; }
-  .chat-msg .cname { color: var(--accent); font-size: 10px; font-family: 'DM Mono', monospace; }
-  .chat-msg.me .cname { color: var(--accent2); }
-  .chat-msg .cbody { color: var(--text); word-break: break-word; }
-  .chat-msg.system .cbody { color: var(--muted); font-style: italic; }
-  .chat-input-area { padding: 8px 10px; border-top: 1px solid var(--border); display: flex; gap: 6px; flex-shrink: 0; }
-  .chat-input-area input {
-    flex: 1; padding: 7px 9px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: 6px; color: var(--text);
-    font-family: 'Space Grotesk', sans-serif; font-size: 11px; outline: none;
-    transition: border-color 0.2s;
-  }
-  .chat-input-area input:focus { border-color: var(--accent); }
-  .chat-send-btn { padding: 7px 10px; background: var(--accent); color: #0a0805; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; transition: background 0.15s; }
-  .chat-send-btn:hover { background: var(--accent2); }
-
-  /* ─── BOTTOM BAR ─── */
-  .bottom-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 7px 16px; background: var(--surface2);
-    border-top: 1px solid var(--border); flex-shrink: 0; gap: 10px; min-height: 44px;
-  }
-  .help-text { font-size: 12px; color: var(--muted); flex: 1; font-family: 'DM Mono', monospace; }
-  .btn-action { font-size: 12px; padding: 8px 14px; white-space: nowrap; }
-  .btn-danger { background: rgba(217,79,79,0.12); color: var(--red); border: 1px solid rgba(217,79,79,0.3); }
-  .btn-danger:hover:not(:disabled) { background: rgba(217,79,79,0.22); border-color: var(--red); }
-  .btn-success { background: rgba(74,171,114,0.12); color: var(--green); border: 1px solid rgba(74,171,114,0.3); }
-  .btn-success:hover:not(:disabled) { background: rgba(74,171,114,0.22); border-color: var(--green); }
-
-  /* ─── INITIAL PEEK OVERLAY ─── */
-  .peek-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 150; gap: 24px; backdrop-filter: blur(6px);
-  }
-  .peek-overlay h2 { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--accent); }
-  .peek-overlay p { font-size: 14px; color: var(--muted); text-align: center; max-width: 320px; line-height: 1.6; }
-  .peek-cards-row { display: flex; gap: 12px; }
-  .peek-ready-btn {
-    padding: 12px 32px; background: var(--accent); color: #0a0805;
-    border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
-    cursor: pointer; font-family: 'Space Grotesk', sans-serif;
-    transition: all 0.15s; letter-spacing: 0.05em;
-    box-shadow: 0 4px 20px rgba(200,169,110,0.35);
-  }
-  .peek-ready-btn:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(200,169,110,0.45); }
-  .peek-ready-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-  /* ─── MODAL ─── */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100; backdrop-filter: blur(5px);
-    opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 16px; padding: 28px; max-width: 400px; width: 94%;
-    text-align: center; display: flex; flex-direction: column; gap: 16px;
-    transform: scale(0.94); transition: transform 0.2s; max-height: 88vh; overflow-y: auto;
-    box-shadow: 0 8px 48px rgba(0,0,0,0.6);
-  }
-  .modal-overlay.open .modal { transform: scale(1); }
-  .modal h2 { font-family: 'Playfair Display', serif; font-size: 26px; color: var(--accent); }
-  .modal p { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .score-table { text-align: left; font-size: 12px; width: 100%; font-family: 'DM Mono', monospace; }
-  .score-row { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--border); gap: 8px; }
-  .score-row.winner { color: var(--green); }
-  .status-chip { padding: 3px 9px; border-radius: 20px; font-size: 10px; display: inline-block; font-family: 'DM Mono', monospace; }
-  .chip-cabo { background: rgba(200,169,110,0.12); color: var(--accent); border: 1px solid rgba(200,169,110,0.5); }
-
-  /* ─── EVENT BANNER ─── */
-  .event-banner {
-    position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
-    background: var(--surface); border: 1px solid var(--accent);
-    border-radius: 10px; padding: 10px 22px;
-    font-size: 13px; color: var(--text); z-index: 200;
-    text-align: center; pointer-events: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    animation: bannerIn 0.3s ease forwards;
-    max-width: 340px;
-  }
-  .event-banner .ev-title { color: var(--accent); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px; font-family: 'DM Mono', monospace; }
-
-  /* ─── CENSORED CARD ─── */
-  .censored-overlay {
-    position: absolute; inset: 0; border-radius: 8px;
-    background: linear-gradient(135deg, #1a1a30, #2a1a3a);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 3px; z-index: 10; pointer-events: none;
-  }
-  .censored-overlay .cens-icon { font-size: 18px; }
-  .censored-overlay .cens-text { font-size: 8px; color: var(--purple); letter-spacing: 0.08em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
-
-  /* ─── LOADING ─── */
-  .loading-overlay {
-    position: fixed; inset: 0; background: var(--bg);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 300; gap: 16px;
-  }
-  .spinner { width: 36px; height: 36px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
-
-  /* ─── DEAL ANIMATION ─── */
-  @keyframes dealIn {
-    0% { opacity: 0; transform: translateY(-60px) rotate(-8deg) scale(0.85); }
-    60% { transform: translateY(4px) rotate(1deg) scale(1.02); }
-    100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
-  }
-  @keyframes bannerIn {
-    from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-    to { opacity: 1; transform: translateX(-50%) translateY(0); }
-  }
-  @keyframes highlightPulse {
-    0%,100% { box-shadow: 0 0 0 2px var(--purple); }
-    50% { box-shadow: 0 0 0 4px var(--purple), 0 0 16px rgba(136,85,204,0.5); }
-  }
-  .card.swap-target { animation: highlightPulse 0.7s ease 2; }
-
-  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.5} }
-  .pulsing { animation: pulse 1.5s ease-in-out infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes fadeIn { from{opacity:0}to{opacity:1} }
-
-  /* ─── SCROLLBARS ─── */
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
-</style>
+<link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<!-- LOADING -->
 <div class="loading-overlay" id="loading">
-  <div style="font-family:'Playfair Display',serif;font-size:44px;color:var(--accent);letter-spacing:0.15em">CABO</div>
+  <div class="loading-logo">CABO</div>
   <div class="spinner"></div>
-  <div style="font-size:12px;color:var(--muted);font-family:'DM Mono',monospace">Connecting...</div>
+  <div class="loading-hint">Connecting...</div>
 </div>
 
 <!-- LOBBY -->
@@ -455,15 +22,17 @@
     <div class="logo-sub">Card Game</div>
   </div>
 
+  <!-- Name entry -->
   <div class="lobby-box" id="enter-name-box">
     <h2>Welcome</h2>
     <div>
       <label>Your Name</label>
-      <input type="text" id="player-name-input" placeholder="Enter your name..." maxlength="20" />
+      <input type="text" id="player-name-input" placeholder="Enter your name..." maxlength="20" autofocus />
     </div>
     <button class="btn btn-primary" onclick="setName()">Continue →</button>
   </div>
 
+  <!-- Main lobby -->
   <div class="lobby-box" id="lobby-main" style="display:none">
     <h2>Play Cabo</h2>
     <button class="btn btn-primary" onclick="createRoom()">🎲 Create New Room</button>
@@ -471,7 +40,7 @@
     <div>
       <label>Room Code</label>
       <input type="text" id="join-code-input" placeholder="4-letter code..." maxlength="4"
-        style="text-transform:uppercase;letter-spacing:0.22em;font-size:20px" />
+        style="text-transform:uppercase;letter-spacing:0.28em;font-size:22px;text-align:center" />
     </div>
     <button class="btn btn-secondary" onclick="joinRoom()">Join Room →</button>
     <div class="power-legend">
@@ -484,6 +53,7 @@
     </div>
   </div>
 
+  <!-- Waiting room -->
   <div class="lobby-box" id="waiting-room" style="display:none">
     <h2>Room Ready</h2>
     <div class="room-code-display">
@@ -491,16 +61,19 @@
       <div class="hint">Share this code with friends</div>
     </div>
     <div>
-      <label style="margin-bottom:7px;display:block">Players (<span id="player-count">1</span>/6)</label>
+      <label style="margin-bottom:8px;display:block">Players (<span id="player-count">1</span>/6)</label>
       <div class="player-list" id="player-list"></div>
     </div>
-    <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start Game (need 2+)</button>
+    <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>
+      Start Game (need 2+)
+    </button>
     <button class="btn btn-secondary" onclick="leaveRoom()">← Leave</button>
   </div>
 </div>
 
 <!-- GAME -->
 <div id="game">
+  <!-- Header -->
   <div class="game-header">
     <div class="game-title">CABO</div>
     <div class="turn-info">
@@ -510,48 +83,59 @@
     <div id="cabo-status"></div>
   </div>
 
+  <!-- Score strip -->
   <div class="score-strip" id="score-strip"></div>
 
+  <!-- Main game area -->
   <div class="game-main">
     <div class="game-board">
+
+      <!-- Opponents -->
       <div class="opponents-area" id="opponents-area"></div>
 
+      <!-- Center: deck, drawn card, discard -->
       <div class="center-area">
+        <!-- Draw pile -->
         <div class="pile-container">
           <div class="pile-label">Draw Pile</div>
-          <div class="card deck-card" id="deck-pile" onclick="drawFromDeck()">
-            <div class="card-inner">
-              <div class="card-back"></div>
-            </div>
+          <div class="card-slot deck-card" id="deck-pile" onclick="drawFromDeck()">
+            <img class="card-img" src="https://deckofcardsapi.com/static/img/back.png" draggable="false" alt="Draw Pile">
             <span class="deck-count" id="deck-count"></span>
           </div>
         </div>
 
+        <!-- Drawn card (shown only when applicable) -->
         <div id="drawn-card-area" style="display:none">
           <div class="drawn-area">
             <div class="drawn-area-label">Drawn Card</div>
             <div id="drawn-card-display"></div>
-            <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap;justify-content:center">
+            <div class="drawn-area-buttons">
               <button class="btn btn-secondary btn-action" onclick="discardDrawnCard()">Discard</button>
               <button class="btn btn-success btn-action" id="use-power-btn" onclick="usePower()" style="display:none">Use Power</button>
             </div>
           </div>
         </div>
 
+        <!-- Discard pile -->
         <div class="pile-container">
           <div class="pile-label">Discard Pile</div>
-          <div id="discard-pile-display"><div class="discard-empty">＋</div></div>
+          <div id="discard-pile-display">
+            <div class="discard-empty">+</div>
+          </div>
         </div>
       </div>
 
+      <!-- My cards -->
       <div class="my-area" id="my-area">
-        <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace" id="my-name-label">You</div>
+        <div class="my-name-label" id="my-name-label">You</div>
         <div class="hand-row" id="my-cards"></div>
       </div>
 
+      <!-- Log -->
       <div class="log-panel" id="log-panel"></div>
     </div>
 
+    <!-- Chat -->
     <div class="chat-panel">
       <div class="chat-header">💬 Chat</div>
       <div class="chat-messages" id="chat-messages"></div>
@@ -562,29 +146,36 @@
     </div>
   </div>
 
+  <!-- Bottom bar -->
   <div class="bottom-bar">
     <div class="help-text" id="help-text">Waiting...</div>
-    <button class="btn btn-action btn-danger" id="cabo-btn" onclick="callCabo()">📣 Call CABO</button>
+    <button class="btn btn-action btn-danger" id="cabo-btn" onclick="callCabo()" disabled>
+      📣 Call CABO
+    </button>
   </div>
 </div>
 
 <!-- Initial Peek Overlay -->
 <div id="peek-overlay" class="peek-overlay" style="display:none">
   <h2>Peek at Your Cards</h2>
-  <p>These are your two inner cards. Memorize them — then click Ready when done.</p>
+  <p>These are your two inner cards. Memorize them — click Ready when done.</p>
   <div class="peek-cards-row" id="peek-cards-row"></div>
   <button class="peek-ready-btn" id="peek-ready-btn" onclick="markReady()">I'm Ready ✓</button>
 </div>
 
-<!-- Modals -->
+<!-- Round End Modal -->
 <div class="modal-overlay" id="round-modal">
   <div class="modal">
     <h2>Round Over!</h2>
     <div id="round-modal-content"></div>
-    <button class="btn btn-primary" id="next-round-btn" onclick="nextRound()" style="display:none">Next Round →</button>
+    <button class="btn btn-primary" id="next-round-btn" onclick="nextRound()" style="display:none">
+      Next Round →
+    </button>
     <button class="btn btn-secondary" onclick="closeRoundModal()">Close</button>
   </div>
 </div>
+
+<!-- Game Over Modal -->
 <div class="modal-overlay" id="game-over-modal">
   <div class="modal">
     <h2 id="gameover-title">Game Over!</h2>
@@ -593,1112 +184,6 @@
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue, push, remove, off }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDvuECKAQvX4WY9UwBYHXrkGcivcBKwd8c",
-  authDomain: "cabo-1611d.firebaseapp.com",
-  databaseURL: "https://cabo-1611d-default-rtdb.firebaseio.com",
-  projectId: "cabo-1611d",
-  storageBucket: "cabo-1611d.firebasestorage.app",
-  messagingSenderId: "507007893312",
-  appId: "1:507007893312:web:139152ef2e57c7235584a5"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-let myId = null, myName = '', roomCode = null, roomRef = null;
-let gameState = null, isHost = false;
-let pendingAction = null;
-let initialPeekDone = false;
-const myKnownCards = new Map();
-let lastEventId = null;
-
-const SUIT_RED = new Set(['♥','♦']);
-
-// ─── CARD FACE BUILDER ───
-function cardLabel(card) {
-  if (!card) return '?';
-  const f = card.face ?? card.value;
-  if (!f || card.suit === '★') return '★';
-  if (f === 1) return 'A';
-  if (f === 11) return 'J';
-  if (f === 12) return 'Q';
-  if (f === 13) return 'K';
-  return String(f);
-}
-
-function cardPower(card) {
-  if (!card) return null;
-  const f = card.face ?? card.value;
-  if (f === 7 || f === 8) return 'peek';
-  if (f === 9 || f === 10) return 'spy';
-  if (f === 11) return 'blindswap';
-  if (f === 12) return 'peekswap';
-  if (f === 13) return 'kingswap';
-  return null;
-}
-
-function isRedCard(card) { return card && SUIT_RED.has(card.suit); }
-
-// Pip grid templates for number cards
-function getPipLayout(n) {
-  const layouts = {
-    2: { cols: 1, pips: [1, 0, 1] },     // top, skip, bot
-    3: { cols: 1, pips: [1, 1, 1] },
-    4: { cols: 2, pips: [1,1, 0,0, 1,1] },
-    5: { cols: 2, pips: [1,1, 0,1, 1,1] },
-    6: { cols: 2, pips: [1,1, 1,1, 1,1] },
-    7: { cols: 2, pips: [1,1, 0,1, 1,1, 1,0] },
-    8: { cols: 2, pips: [1,1, 1,1, 1,1, 1,1] },
-    9: { cols: 2, pips: [1,1, 1,1, 0,0, 1,1, 1,1] },
-    10:{ cols: 2, pips: [1,1, 1,1, 1,0, 0,1, 1,1, 1,1] }
-  };
-  return layouts[n];
-}
-
-// Build a card element with proper face/back
-function makeCardEl(card, opts = {}) {
-  const el = document.createElement('div');
-  el.className = 'card';
-  const inner = document.createElement('div');
-  inner.className = 'card-inner';
-
-  // Always build back
-  const back = document.createElement('div');
-  back.className = 'card-back';
-  inner.appendChild(back);
-
-  if (card && !opts.faceDown) {
-    const face = buildCardFace(card);
-    inner.appendChild(face);
-    el.classList.add('flipped');
-  }
-
-  el.appendChild(inner);
-  return el;
-}
-
-function buildCardFace(card) {
-  const face = document.createElement('div');
-  face.className = 'card-face ' + (isRedCard(card) ? 'red' : 'black');
-
-  const p = cardPower(card);
-  if (p === 'peek') face.classList.add('peek-power');
-  else if (p === 'spy') face.classList.add('spy-power');
-  else if (p === 'blindswap' || p === 'peekswap') face.classList.add('swap-power');
-  else if (p === 'kingswap') face.classList.add('king-power');
-
-  const lbl = cardLabel(card);
-  const suit = card.suit || '';
-  const f = card.face ?? card.value;
-
-  const top = document.createElement('div');
-  top.className = 'cf-corner';
-  top.innerHTML = `<span class="cf-rank">${lbl}</span><span class="cf-suit">${suit}</span>`;
-
-  // Center
-  const center = document.createElement('div');
-  const isFaceCard = (f === 0 || f === 1 || f >= 11);
-  if (isFaceCard) {
-    center.className = 'cf-center';
-    center.style.fontSize = f === 1 ? '30px' : '26px';
-    center.textContent = suit;
-  } else {
-    const layout = getPipLayout(f);
-    if (layout) {
-      center.className = 'cf-center pips';
-      center.style.gridTemplateColumns = `repeat(${layout.cols}, 1fr)`;
-      center.style.fontSize = layout.cols === 1 ? '12px' : '9px';
-      center.style.gap = '1px';
-      layout.pips.forEach(show => {
-        const pip = document.createElement('span');
-        pip.textContent = show ? suit : '';
-        center.appendChild(pip);
-      });
-    } else {
-      center.className = 'cf-center';
-      center.textContent = suit;
-    }
-  }
-
-  const bot = document.createElement('div');
-  bot.className = 'cf-corner bot';
-  bot.innerHTML = `<span class="cf-rank">${lbl}</span><span class="cf-suit">${suit}</span>`;
-
-  face.appendChild(top);
-  face.appendChild(center);
-  face.appendChild(bot);
-  return face;
-}
-
-// Flip a card element face-up with animation
-function flipCardUp(el, card, delay = 0) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const inner = el.querySelector('.card-inner');
-      if (!inner) { resolve(); return; }
-      // Remove existing face if any
-      const oldFace = inner.querySelector('.card-face');
-      if (oldFace) oldFace.remove();
-      const face = buildCardFace(card);
-      inner.appendChild(face);
-      el.classList.add('flipped');
-      setTimeout(resolve, 520);
-    }, delay);
-  });
-}
-
-// Flip face-down
-function flipCardDown(el, delay = 0) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      el.classList.remove('flipped');
-      setTimeout(resolve, 520);
-    }, delay);
-  });
-}
-
-// ─── DECK BUILDER ───
-function buildDeck() {
-  const suits = ['♠','♥','♦','♣'];
-  const deck = [];
-  for (let f = 1; f <= 13; f++) {
-    for (const s of suits) {
-      const value = (f === 13 && s === '♠') ? 0 : f;
-      deck.push({ face: f, suit: s, value });
-    }
-  }
-  deck.push({ face: 0, suit: '★', value: 0 });
-  deck.push({ face: 0, suit: '★', value: 0 });
-  return deck;
-}
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
-  }
-  return a;
-}
-
-// ─── LOBBY ───
-function showScreen(id) {
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('lobby').style.display = id === 'lobby' ? 'flex' : 'none';
-  document.getElementById('game').style.display = id === 'game' ? 'flex' : 'none';
-}
-
-function setLoading(btn, loading, text) {
-  if (loading) { btn.dataset.origText = btn.textContent; if (text) btn.textContent = text; btn.classList.add('loading'); btn.disabled = true; }
-  else { btn.textContent = btn.dataset.origText || btn.textContent; btn.classList.remove('loading'); btn.disabled = false; }
-}
-
-window.setName = function() {
-  const n = document.getElementById('player-name-input').value.trim();
-  if (!n) return;
-  myName = n;
-  document.getElementById('enter-name-box').style.display = 'none';
-  document.getElementById('lobby-main').style.display = 'flex';
-};
-
-window.createRoom = async function() {
-  const btn = event.currentTarget;
-  setLoading(btn, true, 'Creating...');
-  try {
-    const code = Array.from({length:4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*23)]).join('');
-    roomCode = code; isHost = true;
-    await joinRoomWithCode(code);
-  } catch(e) { setLoading(btn, false); alert('Failed to create room.'); }
-};
-
-window.joinRoom = async function() {
-  const code = document.getElementById('join-code-input').value.trim().toUpperCase();
-  if (code.length !== 4) return alert('Enter a 4-letter room code');
-  const btn = document.querySelector('#lobby-main .btn-secondary');
-  setLoading(btn, true, 'Joining...');
-  try {
-    const snap = await get(ref(db, `rooms/${code}`));
-    if (!snap.exists()) { setLoading(btn, false); return alert('Room not found'); }
-    if (snap.val().state !== 'lobby') { setLoading(btn, false); return alert('Game already started'); }
-    roomCode = code; isHost = false;
-    await joinRoomWithCode(code);
-  } catch(e) { setLoading(btn, false); alert('Failed to join room.'); }
-};
-
-async function joinRoomWithCode(code) {
-  roomRef = ref(db, `rooms/${code}`);
-  const playerRef = push(ref(db, `rooms/${code}/players`));
-  myId = playerRef.key;
-  const snap = await get(ref(db, `rooms/${code}/players`));
-  const count = Object.keys(snap.val() || {}).length;
-  await set(playerRef, { name: myName, id: myId, score: 0 });
-  if (count === 0) {
-    await set(ref(db, `rooms/${code}/state`), 'lobby');
-    await set(ref(db, `rooms/${code}/host`), myId);
-  }
-  document.getElementById('display-room-code').textContent = code;
-  document.getElementById('lobby-main').style.display = 'none';
-  document.getElementById('waiting-room').style.display = 'flex';
-  listenLobby();
-}
-
-function listenLobby() {
-  const pr = ref(db, `rooms/${roomCode}/players`);
-  onValue(pr, snap => {
-    const arr = Object.values(snap.val() || {});
-    document.getElementById('player-count').textContent = arr.length;
-    const list = document.getElementById('player-list');
-    list.innerHTML = '';
-    arr.forEach(p => {
-      const div = document.createElement('div');
-      div.className = 'player-item' + (p.id === myId ? ' me' : '');
-      div.innerHTML = `<div class="player-dot"></div><span>${p.name}</span>${p.id === arr[0]?.id ? '<span class="host-badge">HOST</span>' : ''}`;
-      list.appendChild(div);
-    });
-    const sb = document.getElementById('start-btn');
-    sb.disabled = arr.length < 2 || arr[0]?.id !== myId;
-    sb.textContent = arr.length < 2 ? 'Start Game (need 2+)' : `Start Game (${arr.length} players)`;
-  });
-  const sr = ref(db, `rooms/${roomCode}/state`);
-  onValue(sr, snap => { if (snap.val() === 'playing') { off(sr); initGame(); } });
-}
-
-window.leaveRoom = function() {
-  if (roomCode && myId) remove(ref(db, `rooms/${roomCode}/players/${myId}`));
-  location.reload();
-};
-
-window.startGame = async function() {
-  if (!isHost) return;
-  const btn = document.getElementById('start-btn');
-  setLoading(btn, true, 'Starting...');
-  const snap = await get(ref(db, `rooms/${roomCode}/players`));
-  const playersObj = snap.val();
-  const playerArr = Object.values(playersObj);
-  const deck = shuffle(buildDeck());
-  const hands = {};
-  playerArr.forEach(p => { hands[p.id] = [deck.shift(), deck.shift(), deck.shift(), deck.shift()]; });
-  const discard = deck.shift();
-  const state = {
-    deck, discard: [discard], hands,
-    playerOrder: playerArr.map(p => p.id),
-    playerNames: Object.fromEntries(playerArr.map(p => [p.id, p.name])),
-    scores: Object.fromEntries(playerArr.map(p => [p.id, 0])),
-    currentTurn: playerArr[0].id,
-    caboCallerId: null, lastTurns: {},
-    phase: 'initial-peek', drawnCard: null, round: 1, log: [],
-    event: null, dealingDone: false
-  };
-  await set(roomRef, { state: 'playing', players: playersObj, host: myId, game: state });
-};
-
-// ─── GAME ───
-let dealingAnimDone = false;
-
-function initGame() {
-  showScreen('game');
-  onValue(ref(db, `rooms/${roomCode}/game`), snap => {
-    if (!snap.exists()) return;
-    gameState = snap.val();
-    fixArrays(gameState);
-    handleSharedEvent(gameState.event);
-    if (!dealingAnimDone && gameState.phase === 'initial-peek') {
-      runDealingAnimation();
-    } else {
-      renderGame();
-    }
-  });
-  onValue(ref(db, `rooms/${roomCode}/chat`), snap => {
-    if (!snap.exists()) return;
-    const arr = Object.values(snap.val());
-    const container = document.getElementById('chat-messages');
-    container.innerHTML = '';
-    arr.slice(-80).forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'chat-msg' + (m.id === myId ? ' me' : '') + (m.system ? ' system' : '');
-      div.innerHTML = m.system ? `<span class="cbody">${m.text}</span>`
-        : `<div class="cname">${m.name}</div><div class="cbody">${esc(m.text)}</div>`;
-      container.appendChild(div);
-    });
-    container.scrollTop = container.scrollHeight;
-  });
-}
-
-function fixArrays(gs) {
-  if (gs.deck && !Array.isArray(gs.deck)) gs.deck = Object.values(gs.deck);
-  if (gs.playerOrder && !Array.isArray(gs.playerOrder)) gs.playerOrder = Object.values(gs.playerOrder);
-  if (gs.discard && !Array.isArray(gs.discard)) gs.discard = Object.values(gs.discard);
-  if (gs.log && !Array.isArray(gs.log)) gs.log = Object.values(gs.log);
-  (gs.playerOrder||[]).forEach(pid => {
-    if (gs.hands?.[pid] && !Array.isArray(gs.hands[pid])) gs.hands[pid] = Object.values(gs.hands[pid]);
-  });
-}
-
-// ─── DEALING ANIMATION ───
-async function runDealingAnimation() {
-  dealingAnimDone = true;
-  const gs = gameState;
-
-  // First render the game board with all cards face-down, no dealing animation yet
-  renderGameShell(gs);
-
-  // Short pause before dealing starts
-  await sleep(400);
-
-  // Deal outer cards (positions 0 and 3) to all players with stagger
-  const allPlayers = gs.playerOrder || [];
-  for (let round = 0; round < 2; round++) {
-    const pos = round === 0 ? 0 : 3; // left outer, right outer
-    for (let i = 0; i < allPlayers.length; i++) {
-      const pid = allPlayers[i];
-      const cardEls = getCardEls(pid);
-      const el = cardEls[pos];
-      if (el) {
-        el.style.opacity = '0';
-        el.style.animation = 'none';
-        await sleep(60);
-        el.style.opacity = '1';
-        el.style.animation = 'dealIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards';
-      }
-      await sleep(80);
-    }
-  }
-
-  await sleep(500);
-
-  // Now deal inner cards (positions 1 and 2) — for MY player only, flip them up
-  // For all players: deal face down first
-  for (let i = 0; i < allPlayers.length; i++) {
-    const pid = allPlayers[i];
-    const cardEls = getCardEls(pid);
-    for (const pos of [1, 2]) {
-      const el = cardEls[pos];
-      if (el) {
-        el.style.opacity = '0';
-        el.style.animation = 'none';
-        await sleep(50);
-        el.style.opacity = '1';
-        el.style.animation = 'dealIn 0.45s cubic-bezier(0.22,1,0.36,1) forwards';
-      }
-      await sleep(70);
-    }
-  }
-
-  await sleep(600);
-
-  // Flip MY inner cards (pos 1,2) face up and show the peek overlay
-  const myCardEls = getCardEls(myId);
-  const myHand = gs.hands?.[myId] || [];
-  await flipCardUp(myCardEls[1], myHand[1]);
-  await sleep(150);
-  await flipCardUp(myCardEls[2], myHand[2]);
-
-  // Show peek overlay with those cards shown
-  showPeekOverlay(myHand[1], myHand[2]);
-}
-
-function showPeekOverlay(card1, card2) {
-  const row = document.getElementById('peek-cards-row');
-  row.innerHTML = '';
-  [card1, card2].forEach(card => {
-    const el = makeCardEl(card);
-    el.classList.add('not-selectable');
-    el.style.transform = 'scale(1.2)';
-    row.appendChild(el);
-  });
-  document.getElementById('peek-overlay').style.display = 'flex';
-  document.getElementById('peek-overlay').style.animation = 'fadeIn 0.3s ease';
-}
-
-window.markReady = async function() {
-  const btn = document.getElementById('peek-ready-btn');
-  btn.disabled = true;
-  btn.textContent = 'Waiting for others...';
-
-  // Flip inner cards back down in the board
-  const myCardEls = getCardEls(myId);
-  await flipCardDown(myCardEls[2]);
-  await flipCardDown(myCardEls[1]);
-
-  // Store that I've seen them (memory only, no timer)
-  const gs = gameState;
-  myKnownCards.set(1, gs.hands?.[myId]?.[1]);
-  myKnownCards.set(2, gs.hands?.[myId]?.[2]);
-
-  // Hide overlay
-  document.getElementById('peek-overlay').style.display = 'none';
-  initialPeekDone = true;
-
-  // Signal ready to Firebase
-  await update(ref(db, `rooms/${roomCode}/game/peekReady`), { [myId]: true });
-
-  // Check if all ready
-  const snap = await get(ref(db, `rooms/${roomCode}/game/peekReady`));
-  const ready = snap.val() || {};
-  if ((gameState.playerOrder||[]).every(pid => ready[pid])) {
-    await update(ref(db, `rooms/${roomCode}/game`), { phase: 'play' });
-  }
-
-  // Host force-start after 30 seconds
-  if (isHost) setTimeout(async () => {
-    const snap = await get(ref(db, `rooms/${roomCode}/game/phase`));
-    if (snap.val() === 'initial-peek') await update(ref(db, `rooms/${roomCode}/game`), { phase: 'play' });
-  }, 30000);
-
-  renderGame();
-};
-
-// Render just the shell (all cards face-down, no interactivity yet)
-function renderGameShell(gs) {
-  // Clear and set up opponents
-  const oppArea = document.getElementById('opponents-area');
-  oppArea.innerHTML = '';
-  (gs.playerOrder||[]).filter(pid => pid !== myId).forEach(pid => {
-    const zone = document.createElement('div');
-    zone.className = 'opponent-zone';
-    zone.dataset.pid = pid;
-    const hand = gs.hands?.[pid] || [];
-    const row = document.createElement('div');
-    row.className = 'hand-row';
-    hand.forEach(() => {
-      const el = makeCardEl(null, { faceDown: true });
-      el.classList.add('not-selectable');
-      el.style.opacity = '0';
-      row.appendChild(el);
-    });
-    zone.innerHTML = `<div class="opponent-name">${gs.playerNames[pid]}</div>`;
-    zone.appendChild(row);
-    oppArea.appendChild(zone);
-  });
-
-  // My cards
-  const myCardsEl = document.getElementById('my-cards');
-  myCardsEl.innerHTML = '';
-  const myHand = gs.hands?.[myId] || [];
-  myHand.forEach(() => {
-    const el = makeCardEl(null, { faceDown: true });
-    el.classList.add('not-selectable');
-    el.style.opacity = '0';
-    myCardsEl.appendChild(el);
-  });
-
-  // Deck count
-  document.getElementById('deck-count').textContent = (gs.deck||[]).length;
-  document.getElementById('turn-label').textContent = 'Dealing cards...';
-  document.getElementById('round-label').textContent = `Round ${gs.round || 1}`;
-}
-
-// ─── SHARED EVENTS ───
-const censoredCards = new Set();
-
-function handleSharedEvent(event) {
-  if (!event || event.id === lastEventId) return;
-  lastEventId = event.id;
-  const actorName = event.actorName || '?';
-  const isMe = event.actorId === myId;
-
-  if (event.type === 'peek') {
-    showBanner(`👁 ${actorName} peeked at their card`, isMe ? '(only you can see it)' : '');
-    if (!isMe) { censoredCards.add(`${event.actorId}:${event.pos}`); setTimeout(() => { censoredCards.delete(`${event.actorId}:${event.pos}`); renderGame(); }, 3000); }
-  }
-  if (event.type === 'spy') {
-    const targetName = event.targetName || '?';
-    showBanner(`🔍 ${actorName} spied on ${targetName}'s card`, isMe ? `You saw: ${event.cardLabel}` : '');
-    if (!isMe) { censoredCards.add(`${event.targetId}:${event.pos}`); setTimeout(() => { censoredCards.delete(`${event.targetId}:${event.pos}`); renderGame(); }, 3000); }
-  }
-  if (event.type === 'swap') {
-    const targetName = event.targetName || '?';
-    showBanner(`🔄 ${actorName} swapped with ${targetName}`, '');
-    setTimeout(() => flashSwapCards(event.actorId, event.myPos, event.targetId, event.oppPos), 100);
-  }
-  if (event.type === 'blindswap') {
-    const targetName = event.targetName || '?';
-    showBanner(`🔄 ${actorName} blind-swapped with ${targetName}`, '');
-    setTimeout(() => flashSwapCards(event.actorId, event.myPos, event.targetId, event.oppPos), 100);
-  }
-  if (event.type === 'cabo') {
-    showBanner(`🎯 ${actorName} called CABO!`, 'Everyone gets one more turn');
-  }
-}
-
-function flashSwapCards(pid1, pos1, pid2, pos2) {
-  const c1 = getCardEls(pid1); const c2 = getCardEls(pid2);
-  if (c1[pos1]) { c1[pos1].classList.add('swap-target'); setTimeout(() => c1[pos1]?.classList.remove('swap-target'), 1400); }
-  if (c2[pos2]) { c2[pos2].classList.add('swap-target'); setTimeout(() => c2[pos2]?.classList.remove('swap-target'), 1400); }
-}
-
-function getCardEls(pid) {
-  if (pid === myId) return [...document.getElementById('my-cards').querySelectorAll('.card')];
-  const zones = document.querySelectorAll('.opponent-zone');
-  for (const zone of zones) { if (zone.dataset.pid === pid) return [...zone.querySelectorAll('.card')]; }
-  return [];
-}
-
-function showBanner(title, subtitle) {
-  document.querySelectorAll('.event-banner').forEach(b => b.remove());
-  const div = document.createElement('div');
-  div.className = 'event-banner';
-  div.innerHTML = `<div class="ev-title">${title}</div>${subtitle ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${subtitle}</div>` : ''}`;
-  document.body.appendChild(div);
-  setTimeout(() => div.remove(), 3500);
-}
-
-function broadcastEvent(eventData) {
-  const id = Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-  return update(ref(db, `rooms/${roomCode}/game`), { event: { ...eventData, id } });
-}
-
-const isMyTurn = () => gameState?.currentTurn === myId;
-
-// ─── MAIN RENDER ───
-function renderGame() {
-  if (!gameState) return;
-  const gs = gameState;
-  const myTurn = isMyTurn();
-  const currentName = gs.playerNames?.[gs.currentTurn] || '?';
-
-  // Header
-  const tl = document.getElementById('turn-label');
-  if (gs.phase === 'initial-peek') {
-    tl.textContent = 'Peek at your cards';
-    tl.style.color = 'var(--accent)';
-  } else {
-    tl.textContent = myTurn ? '✨ Your Turn' : `${currentName}'s Turn`;
-    tl.style.color = myTurn ? 'var(--accent2)' : 'var(--text)';
-  }
-  document.getElementById('round-label').textContent = `Round ${gs.round || 1}`;
-  document.getElementById('cabo-status').innerHTML = gs.caboCallerId
-    ? `<span class="status-chip chip-cabo">CABO — ${gs.playerNames[gs.caboCallerId]}</span>` : '';
-
-  // Score strip
-  const strip = document.getElementById('score-strip');
-  strip.innerHTML = '';
-  (gs.playerOrder||[]).forEach(pid => {
-    const div = document.createElement('div');
-    div.className = 'score-badge' + (pid === gs.currentTurn ? ' active-player' : '');
-    div.innerHTML = `<span class="sname">${gs.playerNames[pid]}${pid===myId?' ★':''}</span><span class="sval">${gs.scores?.[pid]??0}</span>`;
-    strip.appendChild(div);
-  });
-
-  // Opponents
-  const oppArea = document.getElementById('opponents-area');
-  oppArea.innerHTML = '';
-  (gs.playerOrder||[]).filter(pid => pid !== myId).forEach(pid => {
-    const zone = document.createElement('div');
-    zone.className = 'opponent-zone' + (pid === gs.currentTurn ? ' active-turn' : '');
-    zone.dataset.pid = pid;
-    const hand = gs.hands?.[pid] || [];
-    const row = document.createElement('div');
-    row.className = 'hand-row';
-    hand.forEach((c, i) => {
-      const isCensored = censoredCards.has(`${pid}:${i}`);
-      const el = makeCardEl(null, { faceDown: true });
-      if (isCensored) {
-        const ov = document.createElement('div'); ov.className = 'censored-overlay';
-        ov.innerHTML = `<span class="cens-icon">🔒</span><span class="cens-text">Censored</span>`;
-        el.querySelector('.card-back')?.appendChild(ov);
-      }
-      const pa = pendingAction;
-      const clickable = myTurn && pa && (
-        (pa.type==='spy'&&pa.step==='pick-opp')||
-        (pa.type==='peekswap'&&pa.step==='pick-opp')||
-        (pa.type==='kingswap'&&pa.step==='pick-opp')||
-        (pa.type==='kingswap'&&pa.step==='pick-opp-swap')||
-        (pa.type==='blindswap'&&pa.step==='pick-opp')
-      );
-      if (clickable) { el.classList.add('selectable'); el.onclick = () => handleOppCardClick(pid, i); }
-      else el.classList.add('not-selectable');
-      row.appendChild(el);
-    });
-    zone.innerHTML = `<div class="opponent-name">${gs.playerNames[pid]}</div>`;
-    zone.appendChild(row);
-    oppArea.appendChild(zone);
-  });
-
-  // Deck
-  const deckEl = document.getElementById('deck-pile');
-  document.getElementById('deck-count').textContent = (gs.deck||[]).length;
-  deckEl.style.opacity = (gs.deck||[]).length === 0 ? '0.3' : '1';
-  const canDraw = myTurn && gs.phase==='play' && !gs.drawnCard && !pendingAction;
-  deckEl.querySelector('.card-back').style.cursor = canDraw ? 'pointer' : 'default';
-
-  // Discard
-  const discardArr = gs.discard||[];
-  const top = discardArr[discardArr.length-1]||null;
-  const dd = document.getElementById('discard-pile-display');
-  if (top) { const el = makeCardEl(top); el.classList.add('not-selectable'); dd.innerHTML=''; dd.appendChild(el); }
-  else { dd.innerHTML='<div class="discard-empty">＋</div>'; }
-
-  // Drawn card display
-  const drawnArea = document.getElementById('drawn-card-area');
-  if (gs.drawnCard && myTurn && !pendingAction) {
-    drawnArea.style.display = 'block';
-    const container = document.getElementById('drawn-card-display');
-    container.innerHTML = '';
-    const dEl = makeCardEl(gs.drawnCard);
-    dEl.classList.add('not-selectable');
-    container.appendChild(dEl);
-    const power = cardPower(gs.drawnCard);
-    const pb = document.getElementById('use-power-btn');
-    if (power) {
-      pb.style.display = 'block';
-      pb.textContent = { peek:'👁 Peek Own', spy:'🔍 Spy Opp.', blindswap:'🔄 Blind Swap', peekswap:'👁🔄 Peek+Swap', kingswap:'👑 King Swap' }[power];
-    } else pb.style.display = 'none';
-  } else drawnArea.style.display = 'none';
-
-  // My hand
-  const myHand = gs.hands?.[myId]||[];
-  const myCardsEl = document.getElementById('my-cards');
-  myCardsEl.innerHTML = '';
-  document.getElementById('my-name-label').textContent = myName + ' (you)';
-  document.getElementById('my-area').className = 'my-area' + (myTurn ? ' my-turn' : '');
-
-  myHand.forEach((card, i) => {
-    const known = myKnownCards.has(i);
-    const pa = pendingAction;
-    const kingShowMine = pa?.type==='kingswap' && pa.step==='peek-mine' && pa.myPos===i;
-    const el = (known || kingShowMine) ? makeCardEl(card) : makeCardEl(null, { faceDown: true });
-
-    if (gs.phase==='play' && myTurn) {
-      if (gs.drawnCard && !pa) {
-        el.classList.add('selectable'); el.title='Swap in drawn card';
-        el.onclick = () => swapWithMyCard(i);
-      } else if (pa?.type==='peek'&&pa.step==='pick') {
-        el.classList.add('selectable'); el.onclick = () => doPeekReveal(i, card);
-      } else if (pa?.type==='blindswap'&&pa.step==='pick-mine') {
-        el.classList.add('selectable'); el.onclick = () => { pendingAction.myPos=i; pendingAction.step='pick-opp'; renderGame(); };
-      } else if (pa?.type==='peekswap'&&pa.step==='pick-mine') {
-        el.classList.add('selectable'); el.onclick = () => doPeekswapPickMine(i);
-      } else if (pa?.type==='kingswap'&&pa.step==='pick-mine') {
-        el.classList.add('selectable'); el.onclick = () => doKingswapPickMine(i);
-      } else el.classList.add('not-selectable');
-      if (pa?.myPos === i) el.classList.add('selected');
-    } else el.classList.add('not-selectable');
-
-    myCardsEl.appendChild(el);
-  });
-
-  // Help text
-  document.getElementById('help-text').textContent = helpText(gs, myTurn, currentName);
-
-  // CABO btn
-  document.getElementById('cabo-btn').disabled = !myTurn || !!gs.caboCallerId || gs.phase!=='play' || !!gs.drawnCard || !!pendingAction;
-
-  // Log
-  const logPanel = document.getElementById('log-panel');
-  logPanel.innerHTML = '';
-  (gs.log||[]).slice(-5).reverse().forEach(e => {
-    const div = document.createElement('div'); div.className='log-entry'; div.innerHTML=e; logPanel.appendChild(div);
-  });
-
-  if (gs.phase==='round-end') showRoundEnd();
-  if (gs.phase==='game-over' && !document.getElementById('game-over-modal').classList.contains('open'))
-    showGameOverModal(gs.scores, gs.playerNames, gs.playerOrder);
-}
-
-function helpText(gs, myTurn, currentName) {
-  if (gs.phase==='initial-peek') return 'Peek at your two inner cards and click Ready';
-  if (!myTurn) return `Waiting for ${currentName}...`;
-  const pa = pendingAction;
-  if (!gs.drawnCard && !pa) return 'Draw a card from the deck, or call CABO!';
-  if (gs.drawnCard && !pa) return 'Discard it, or click one of your cards to swap it in';
-  if (!pa) return '';
-  const map = {
-    'peek:pick':'👁 Click one of YOUR cards to peek at it',
-    'spy:pick-opp':'🔍 Click an OPPONENT\'S card to spy on it',
-    'spy:revealed':'🔍 Spied! Ending turn...',
-    'blindswap:pick-mine':'🔄 Pick YOUR card for blind swap',
-    'blindswap:pick-opp':'🔄 Now pick OPPONENT\'S card to swap with',
-    'peekswap:pick-opp':'👁🔄 Pick OPPONENT\'S card to peek at first',
-    'peekswap:peek-done':'👁🔄 Saw their card — pick YOUR card to swap out',
-    'peekswap:pick-mine':'👁🔄 Click YOUR card to swap out',
-    'kingswap:pick-opp':'👑 Pick OPPONENT\'S card to peek at',
-    'kingswap:peek-done':'👑 Now pick YOUR card to peek at',
-    'kingswap:pick-mine':'👑 Click YOUR card to peek at it',
-    'kingswap:peek-mine':'👑 Now pick OPPONENT\'S card to swap with',
-    'kingswap:pick-opp-swap':'👑 Pick OPPONENT\'S card to complete the swap',
-  };
-  return map[`${pa?.type}:${pa?.step}`] || '';
-}
-
-function handleOppCardClick(oppId, pos) {
-  const pa = pendingAction;
-  if (!pa) return;
-  if (pa.type==='spy'&&pa.step==='pick-opp') doSpyReveal(oppId, pos);
-  else if (pa.type==='peekswap'&&pa.step==='pick-opp') doPeekswapPickOpp(oppId, pos);
-  else if (pa.type==='kingswap'&&pa.step==='pick-opp') doKingswapPickOpp(oppId, pos);
-  else if (pa.type==='kingswap'&&pa.step==='pick-opp-swap') doKingswapSwap(oppId, pos);
-  else if (pa.type==='blindswap'&&pa.step==='pick-opp') doBlindswapFinish(oppId, pos);
-}
-
-// ─── DRAW ───
-window.drawFromDeck = async function() {
-  if (!isMyTurn() || gameState.phase!=='play' || gameState.drawnCard || pendingAction) return;
-  const gs = gameState;
-  if (!gs.deck?.length) return;
-  const deck = [...gs.deck];
-  const drawn = deck.shift();
-  await update(ref(db, `rooms/${roomCode}/game`), {
-    deck, drawnCard: drawn,
-    log: addLog(gs.log, `<span class="lname">${myName}</span> drew a card`)
-  });
-};
-
-// ─── DISCARD ───
-window.discardDrawnCard = async function() {
-  if (!isMyTurn() || !gameState.drawnCard) return;
-  const gs = gameState;
-  const lbl = cardLabel(gs.drawnCard);
-  const updates = {
-    drawnCard: null, discard: [...(gs.discard||[]), gs.drawnCard],
-    log: addLog(gs.log, `<span class="lname">${myName}</span> discarded ${lbl}${gs.drawnCard.suit}`)
-  };
-  Object.assign(updates, nextTurn(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-};
-
-// ─── USE POWER ───
-window.usePower = function() {
-  if (!isMyTurn() || !gameState.drawnCard) return;
-  const power = cardPower(gameState.drawnCard);
-  if (!power) return;
-  pendingAction = { type: power, drawnCard: gameState.drawnCard, step: {peek:'pick',spy:'pick-opp',blindswap:'pick-mine',peekswap:'pick-opp',kingswap:'pick-opp'}[power] };
-  renderGame();
-};
-
-// ─── CARD SWAP ANIMATION ───
-async function animateSwapIntoHand(pos, newCard, oldCard) {
-  // We'll do the flip animation directly on the rendered card
-  const myCardsEl = document.getElementById('my-cards');
-  const cardEls = [...myCardsEl.querySelectorAll('.card')];
-  const targetEl = cardEls[pos];
-  if (!targetEl) return;
-
-  // 1. Flip the target card to show the new card face-up
-  await flipCardUp(targetEl, newCard);
-  // Keep face-up for 3 seconds
-  await sleep(3000);
-  // 2. Flip back down
-  await flipCardDown(targetEl);
-}
-
-// ─── SWAP WITH MY CARD ───
-window.swapWithMyCard = async function(pos) {
-  if (!isMyTurn() || !gameState.drawnCard) return;
-  const gs = gameState;
-  const myHand = [...gs.hands[myId]];
-  const oldCard = myHand[pos];
-  myHand[pos] = gs.drawnCard;
-  const lbl = cardLabel(gs.drawnCard);
-
-  // Do the DB update first
-  const updates = {
-    drawnCard: null, discard: [...(gs.discard||[]), oldCard],
-    [`hands/${myId}`]: myHand,
-    log: addLog(gs.log, `<span class="lname">${myName}</span> swapped ${lbl}${gs.drawnCard.suit} into hand`)
-  };
-  Object.assign(updates, nextTurn(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-
-  // After DB update, schedule face-up reveal (will run during renderGame cycle)
-  myKnownCards.set(pos, gs.drawnCard);
-  renderGame();
-  // Flip up the card at pos
-  await sleep(100);
-  const cardEls = getCardEls(myId);
-  const el = cardEls[pos];
-  if (el) {
-    await flipCardUp(el, gs.drawnCard);
-    await sleep(3000);
-    await flipCardDown(el);
-    myKnownCards.delete(pos);
-    renderGame();
-  }
-};
-
-// ─── PEEK OWN (7/8) ───
-function doPeekReveal(pos, card) {
-  myKnownCards.set(pos, card);
-  const lbl = cardLabel(card);
-  broadcastEvent({ type:'peek', actorId:myId, actorName:myName, pos, cardLabel:`${lbl}${card.suit}` });
-  showToast(`Card ${pos+1}: ${lbl}${card.suit} = ${card.value}pts`, 3000);
-
-  const gs = gameState;
-  const updates = {
-    drawnCard: null, discard: [...(gs.discard||[]), pendingAction.drawnCard],
-    log: addLog(gs.log, `<span class="lname">${myName}</span> peeked at their own card`)
-  };
-  pendingAction = null;
-  Object.assign(updates, nextTurn(gs));
-  update(ref(db, `rooms/${roomCode}/game`), updates);
-
-  renderGame();
-  // Flip card face up, then down
-  sleep(100).then(async () => {
-    const el = getCardEls(myId)[pos];
-    if (el) {
-      await flipCardUp(el, card);
-      await sleep(3000);
-      await flipCardDown(el);
-      myKnownCards.delete(pos);
-      renderGame();
-    }
-  });
-}
-
-// ─── SPY (9/10) ───
-function doSpyReveal(oppId, oppPos) {
-  const gs = gameState;
-  const card = gs.hands[oppId][oppPos];
-  const lbl = cardLabel(card);
-  const opName = gs.playerNames[oppId];
-  pendingAction = { ...pendingAction, step:'revealed', oppId, oppPos };
-  renderGame();
-  showToast(`${opName} Card ${oppPos+1}: ${lbl}${card.suit} = ${card.value}pts`, 3000);
-  broadcastEvent({ type:'spy', actorId:myId, actorName:myName, targetId:oppId, targetName:opName, pos:oppPos, cardLabel:`${lbl}${card.suit}` });
-  setTimeout(async () => {
-    const dc = pendingAction?.drawnCard || gs.drawnCard;
-    const updates = {
-      drawnCard: null, discard: [...(gameState.discard||[]), dc],
-      log: addLog(gameState.log, `<span class="lname">${myName}</span> spied on ${opName}'s card`)
-    };
-    pendingAction = null;
-    Object.assign(updates, nextTurn(gameState));
-    await update(ref(db, `rooms/${roomCode}/game`), updates);
-  }, 2500);
-}
-
-// ─── BLIND SWAP (J) ───
-async function doBlindswapFinish(oppId, oppPos) {
-  const gs = gameState;
-  const myHand = [...gs.hands[myId]]; const oppHand = [...gs.hands[oppId]];
-  const myPos = pendingAction.myPos;
-  [myHand[myPos], oppHand[oppPos]] = [oppHand[oppPos], myHand[myPos]];
-  myKnownCards.delete(myPos);
-  const opName = gs.playerNames[oppId];
-  broadcastEvent({ type:'blindswap', actorId:myId, actorName:myName, targetId:oppId, targetName:opName, myPos, oppPos });
-  const updates = {
-    drawnCard: null, discard: [...(gs.discard||[]), pendingAction.drawnCard],
-    [`hands/${myId}`]: myHand, [`hands/${oppId}`]: oppHand,
-    log: addLog(gs.log, `<span class="lname">${myName}</span> blind-swapped with ${opName}`)
-  };
-  pendingAction = null;
-  Object.assign(updates, nextTurn(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-}
-
-// ─── PEEK+SWAP (Q) ───
-function doPeekswapPickOpp(oppId, oppPos) {
-  const gs = gameState;
-  const card = gs.hands[oppId][oppPos];
-  const lbl = cardLabel(card);
-  const opName = gs.playerNames[oppId];
-  pendingAction = { ...pendingAction, step:'peek-done', oppId, oppPos };
-  broadcastEvent({ type:'spy', actorId:myId, actorName:myName, targetId:oppId, targetName:opName, pos:oppPos, cardLabel:`${lbl}${card.suit}` });
-  showToast(`${opName} Card ${oppPos+1}: ${lbl}${card.suit} — pick YOUR card to swap`, 3000);
-  renderGame();
-  setTimeout(() => { if (pendingAction) { pendingAction.step='pick-mine'; renderGame(); } }, 2500);
-}
-
-async function doPeekswapPickMine(myPos) {
-  const gs = gameState;
-  const myHand = [...gs.hands[myId]]; const oppHand = [...gs.hands[pendingAction.oppId]];
-  const oppPos = pendingAction.oppPos;
-  const oppCard = oppHand[oppPos];
-  [myHand[myPos], oppHand[oppPos]] = [oppHand[oppPos], myHand[myPos]];
-  myKnownCards.set(myPos, oppCard);
-  const opName = gs.playerNames[pendingAction.oppId];
-  broadcastEvent({ type:'swap', actorId:myId, actorName:myName, targetId:pendingAction.oppId, targetName:opName, myPos, oppPos });
-  const updates = {
-    drawnCard:null, discard:[...(gs.discard||[]), pendingAction.drawnCard],
-    [`hands/${myId}`]: myHand, [`hands/${pendingAction.oppId}`]: oppHand,
-    log: addLog(gs.log, `<span class="lname">${myName}</span> peeked & swapped with ${opName}`)
-  };
-  pendingAction = null;
-  Object.assign(updates, nextTurn(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-}
-
-// ─── KING SWAP (K) ───
-function doKingswapPickOpp(oppId, oppPos) {
-  const gs = gameState;
-  const card = gs.hands[oppId][oppPos];
-  const lbl = cardLabel(card);
-  const opName = gs.playerNames[oppId];
-  pendingAction = { ...pendingAction, step:'peek-done', oppId, oppPos };
-  broadcastEvent({ type:'spy', actorId:myId, actorName:myName, targetId:oppId, targetName:opName, pos:oppPos, cardLabel:`${lbl}${card.suit}` });
-  showToast(`${opName} Card ${oppPos+1}: ${lbl}${card.suit} — pick YOUR card to peek`, 3000);
-  renderGame();
-  setTimeout(() => { if (pendingAction) { pendingAction.step='pick-mine'; renderGame(); } }, 2500);
-}
-
-function doKingswapPickMine(myPos) {
-  const gs = gameState;
-  const myCard = gs.hands[myId][myPos];
-  const lbl = cardLabel(myCard);
-  pendingAction = { ...pendingAction, step:'peek-mine', myPos };
-  myKnownCards.set(myPos, myCard);
-  broadcastEvent({ type:'peek', actorId:myId, actorName:myName, pos:myPos, cardLabel:`${lbl}${myCard.suit}` });
-  showToast(`Your Card ${myPos+1}: ${lbl}${myCard.suit} — pick OPPONENT card to swap`, 3000);
-  renderGame();
-  setTimeout(() => { if (pendingAction) { pendingAction.step='pick-opp-swap'; myKnownCards.delete(myPos); renderGame(); } }, 2500);
-}
-
-async function doKingswapSwap(oppId, oppPos) {
-  const gs = gameState;
-  const myHand = [...gs.hands[myId]]; const oppHand = [...gs.hands[oppId]];
-  const myPos = pendingAction.myPos;
-  const oppCard = oppHand[oppPos];
-  [myHand[myPos], oppHand[oppPos]] = [oppHand[oppPos], myHand[myPos]];
-  myKnownCards.set(myPos, oppCard);
-  const opName = gs.playerNames[oppId];
-  broadcastEvent({ type:'swap', actorId:myId, actorName:myName, targetId:oppId, targetName:opName, myPos, oppPos });
-  const updates = {
-    drawnCard:null, discard:[...(gs.discard||[]), pendingAction.drawnCard],
-    [`hands/${myId}`]: myHand, [`hands/${oppId}`]: oppHand,
-    log: addLog(gs.log, `<span class="lname">${myName}</span> used King swap with ${opName}`)
-  };
-  pendingAction = null;
-  Object.assign(updates, nextTurn(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-}
-
-// ─── CABO ───
-window.callCabo = async function() {
-  if (!isMyTurn() || gameState.caboCallerId || gameState.phase!=='play' || pendingAction) return;
-  const gs = gameState;
-  const lastTurns = {};
-  gs.playerOrder.forEach(pid => { if (pid!==myId) lastTurns[pid]=1; });
-  broadcastEvent({ type:'cabo', actorId:myId, actorName:myName });
-  const updates = {
-    caboCallerId:myId, lastTurns,
-    log: addLog(gs.log, `<span class="lname">${myName}</span> <span style="color:var(--accent)">called CABO! 🎯</span>`)
-  };
-  Object.assign(updates, nextTurn(gs));
-  await update(ref(db, `rooms/${roomCode}/game`), updates);
-};
-
-function nextTurn(gs) {
-  const order = gs.playerOrder;
-  const nextPid = order[(order.indexOf(gs.currentTurn)+1) % order.length];
-  if (gs.caboCallerId) {
-    const lt = { ...(gs.lastTurns||{}) };
-    if (lt[gs.currentTurn] !== undefined) lt[gs.currentTurn]--;
-    const allDone = order.filter(pid => pid!==gs.caboCallerId).every(pid => !lt[pid]||lt[pid]<=0);
-    if (allDone) return { currentTurn:nextPid, phase:'round-end', lastTurns:lt };
-    return { currentTurn:nextPid, lastTurns:lt };
-  }
-  return { currentTurn:nextPid };
-}
-
-function addLog(existing, entry) {
-  const logs = [...(existing||[])]; logs.push(entry);
-  if (logs.length > 25) logs.shift();
-  return logs;
-}
-
-// ─── ROUND END ───
-function showRoundEnd() {
-  if (document.getElementById('round-modal').classList.contains('open')) return;
-  const gs = gameState;
-  const results = gs.playerOrder.map(pid => {
-    const hand = gs.hands[pid]||[];
-    const total = hand.reduce((s,c) => s+(c?.value??0), 0);
-    return { pid, name:gs.playerNames[pid], hand, total };
-  }).sort((a,b) => a.total-b.total);
-  const lowest = results[0].total;
-  const cabo = gs.caboCallerId;
-  const scored = results.map(r => {
-    let pts = r.total;
-    if (r.pid===cabo) pts = r.total===lowest ? 0 : r.total+10;
-    return { ...r, pts };
-  });
-  const newScores = { ...(gs.scores||{}) };
-  scored.forEach(r => { newScores[r.pid] = (newScores[r.pid]||0) + r.pts; });
-  const gameOver = Object.values(newScores).some(s => s>=100);
-  let html = '<div class="score-table">';
-  scored.forEach(r => {
-    const handStr = r.hand.map(c => `${cardLabel(c)}${c.suit}(${c.value})`).join(' ');
-    html += `<div class="score-row ${r.pts===0?'winner':''}">
-      <span style="font-size:11px">${r.name}${r.pid===cabo?' 📣':''}: ${handStr}</span>
-      <span style="white-space:nowrap">+${r.pts}→${newScores[r.pid]}</span>
-    </div>`;
-  });
-  html += '</div>';
-  document.getElementById('round-modal-content').innerHTML = html;
-  document.getElementById('next-round-btn').style.display = (isHost&&!gameOver)?'block':'none';
-  document.getElementById('round-modal').classList.add('open');
-  if (isHost) update(ref(db, `rooms/${roomCode}/game`), { scores:newScores, phase:gameOver?'game-over':'round-end' });
-}
-
-function showGameOverModal(scores, names, order) {
-  document.getElementById('round-modal').classList.remove('open');
-  const sorted = order.map(pid => ({ pid, name:names[pid], score:scores[pid] })).sort((a,b) => a.score-b.score);
-  document.getElementById('gameover-title').textContent = `${sorted[0].name} Wins! 🎉`;
-  let html = '<div class="score-table">';
-  sorted.forEach((p,i) => { html += `<div class="score-row ${i===0?'winner':''}"><span>${i+1}. ${p.name}</span><span>${p.score}pts</span></div>`; });
-  html += '</div>';
-  document.getElementById('gameover-content').innerHTML = html;
-  document.getElementById('game-over-modal').classList.add('open');
-}
-
-window.nextRound = async function() {
-  if (!isHost) return;
-  const gs = gameState;
-  const deck = shuffle(buildDeck());
-  const hands = {};
-  gs.playerOrder.forEach(pid => { hands[pid]=[deck.shift(),deck.shift(),deck.shift(),deck.shift()]; });
-  const discard = deck.shift();
-  const newGs = { ...gs, deck, discard:[discard], hands, caboCallerId:null, lastTurns:{},
-    phase:'initial-peek', drawnCard:null, round:(gs.round||1)+1, log:[], event:null };
-  delete newGs.peekReady;
-  await set(ref(db, `rooms/${roomCode}/game`), newGs);
-  myKnownCards.clear(); initialPeekDone=false; pendingAction=null;
-  censoredCards.clear(); lastEventId=null; dealingAnimDone=false;
-  document.getElementById('round-modal').classList.remove('open');
-  document.getElementById('peek-overlay').style.display = 'none';
-};
-
-window.closeRoundModal = function() { document.getElementById('round-modal').classList.remove('open'); };
-window.playAgain = function() { location.reload(); };
-
-// ─── CHAT ───
-window.sendChat = async function() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text || !roomCode) return;
-  input.value = '';
-  await set(push(ref(db, `rooms/${roomCode}/chat`)), { id:myId, name:myName, text, ts:Date.now() });
-};
-
-// ─── TOAST ───
-function showToast(msg, duration=2000) {
-  const t = document.createElement('div');
-  t.style.cssText = `position:fixed;bottom:58px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--accent);color:var(--accent);padding:9px 18px;border-radius:8px;font-size:12px;z-index:999;font-family:'DM Mono',monospace;white-space:nowrap;pointer-events:none;`;
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), duration);
-}
-
-function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-// ─── INIT ───
-document.getElementById('player-name-input').addEventListener('keydown', e => { if(e.key==='Enter') setName(); });
-document.getElementById('join-code-input').addEventListener('keydown', e => { if(e.key==='Enter') joinRoom(); });
-document.getElementById('join-code-input').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase(); });
-document.getElementById('chat-input').addEventListener('keydown', e => { if(e.key==='Enter') sendChat(); });
-
-setTimeout(() => {
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('lobby').style.display = 'flex';
-}, 700);
-</script>
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
