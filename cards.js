@@ -53,8 +53,7 @@ export function buildDeck() {
       deck.push({ face: f, suit: s, value });
     }
   }
-  deck.push({ face: 0, suit: '★', value: 0 });
-  deck.push({ face: 0, suit: '★', value: 0 });
+  // No jokers
   return deck;
 }
 
