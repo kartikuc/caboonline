@@ -19,7 +19,7 @@ import {
   showBanner, showToast, getCardEls, esc,
   renderAddonDiscardButtons, clearAddonDiscardButtons
 } from './ui.js';
-import { startMusic, stopMusic, setVolume, isMusicPlaying } from './music.js';
+import { playLobbyMusic, playGameMusic, stopMusic, resumeMusic, isMusicEnabled, getCurrentContext } from './music.js';
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let myId = null, myName = '', roomCode = null;
@@ -39,6 +39,10 @@ function showScreen(id) {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('lobby').style.display = id === 'lobby' ? 'flex' : 'none';
   document.getElementById('game').style.display = id === 'game' ? 'flex' : 'none';
+  if (isMusicEnabled()) {
+    if (id === 'lobby') playLobbyMusic();
+    else if (id === 'game') playGameMusic();
+  }
 }
 
 function setLoading(btn, loading) {
@@ -50,6 +54,7 @@ window.setName = function () {
   const n = document.getElementById('player-name-input').value.trim();
   if (!n) return;
   myName = n;
+  playLobbyMusic(); // First user interaction — browsers allow audio now
   document.getElementById('enter-name-box').style.display = 'none';
   document.getElementById('lobby-main').style.display = 'flex';
 };
@@ -1251,14 +1256,18 @@ window.sendChat = async function () {
 // ─── MUSIC ────────────────────────────────────────────────────────────────────
 window.toggleMusic = function () {
   const btn = document.getElementById('music-btn');
-  if (isMusicPlaying()) {
+  if (isMusicEnabled()) {
     stopMusic();
     btn.textContent = '🔇';
     btn.title = 'Enable music';
+    btn.classList.remove('music-on');
   } else {
-    startMusic();
+    // Resume in whichever context we're currently in
+    const ctx = document.getElementById('game').style.display !== 'none' ? 'game' : 'lobby';
+    resumeMusic(ctx);
     btn.textContent = '🎵';
     btn.title = 'Disable music';
+    btn.classList.add('music-on');
   }
 };
 
@@ -1280,4 +1289,6 @@ document.getElementById('chat-input').addEventListener('keydown', e => {
 setTimeout(() => {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('lobby').style.display = 'flex';
+  // Lobby music will start on first user interaction (browser autoplay policy)
+  // We'll start it on the first button click via the name input
 }, 600);
