@@ -249,3 +249,64 @@ export function esc(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
+
+// ─── ADDON DISCARD UI ─────────────────────────────────────────────────────────
+
+// Renders the addon-discard banner and buttons below each of the local player's cards.
+// onCardClick(cardIndex) is called when the player clicks a card button.
+export function renderAddonDiscardButtons(myHand, onCardClick) {
+  clearAddonDiscardButtons();
+
+  // Banner above my-cards area
+  const myArea = document.getElementById('my-area');
+  if (!myArea) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'addon-discard-banner';
+  banner.className = 'addon-discard-banner';
+  banner.innerHTML = `
+    <span class="addon-discard-title">⚡ Addon Discard!</span>
+    <span class="addon-discard-hint">Match the discard pile's rank with one of your cards</span>
+    <span class="addon-discard-countdown"><span id="addon-discard-timer">5</span>s</span>
+  `;
+  myArea.insertBefore(banner, myArea.firstChild);
+
+  // Button below each card slot
+  const myCardsEl = document.getElementById('my-cards');
+  if (!myCardsEl) return;
+  const cardEls = [...myCardsEl.querySelectorAll('.card-slot')];
+
+  cardEls.forEach((cardEl, i) => {
+    // Wrap card + button in a positioned container
+    const wrapper = document.createElement('div');
+    wrapper.className = 'addon-card-wrapper';
+    wrapper.id = `addon-wrapper-${i}`;
+
+    const btn = document.createElement('button');
+    btn.className = 'addon-discard-btn';
+    btn.textContent = 'Addon Discard';
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      // Disable all buttons immediately to prevent double-click
+      document.querySelectorAll('.addon-discard-btn').forEach(b => b.disabled = true);
+      onCardClick(i);
+    };
+
+    // Insert wrapper into DOM in place of the card element
+    cardEl.parentNode.insertBefore(wrapper, cardEl);
+    wrapper.appendChild(cardEl);
+    wrapper.appendChild(btn);
+  });
+}
+
+export function clearAddonDiscardButtons() {
+  // Remove banner
+  document.getElementById('addon-discard-banner')?.remove();
+
+  // Unwrap card elements from their wrappers
+  document.querySelectorAll('.addon-card-wrapper').forEach(wrapper => {
+    const cardEl = wrapper.querySelector('.card-slot');
+    if (cardEl) wrapper.parentNode.insertBefore(cardEl, wrapper);
+    wrapper.remove();
+  });
+}
