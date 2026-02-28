@@ -6,7 +6,8 @@ import {
 } from './animations.js';
 import {
   createInitialGameState, createNextRoundState,
-  computeNextTurn, computeRoundScores, addLog, fixArrays, getHelpText
+  computeNextTurn, computeRoundScores, addLog, fixArrays, getHelpText,
+  addonDiscardFaceValue
 } from './gameLogic.js';
 import {
   db, ref, set, get, update, onValue, push, remove, off,
@@ -15,7 +16,8 @@ import {
 import {
   makeCardEl, renderScoreStrip, renderOpponents, renderMyHand,
   renderDiscardPile, renderDrawnCard, renderRoundEnd, renderGameOver,
-  showBanner, showToast, getCardEls, esc
+  showBanner, showToast, getCardEls, esc,
+  renderAddonDiscardButtons, clearAddonDiscardButtons
 } from './ui.js';
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
@@ -26,6 +28,10 @@ const myKnownCards = new Map();
 let lastEventId = null;
 let dealAnimPlayed = false;
 let renderingPaused = false;
+
+// ─── ADDON DISCARD STATE ─────────────────────────────────────────────────────
+let addonDiscardWindowOpen = false;
+let addonDiscardCountdownTimer = null;
 
 // ─── LOBBY ────────────────────────────────────────────────────────────────────
 function showScreen(id) {
@@ -141,6 +147,14 @@ function initGame() {
     fixArrays(gameState);
 
     handleSharedEvent(gameState.event);
+
+    // Handle addon discard window open/close
+    const ad = gameState.addonDiscard;
+    if (ad?.active && !ad?.claimedBy && !addonDiscardWindowOpen) {
+      openAddonDiscardWindow(gameState);
+    } else if ((!ad?.active || ad?.claimedBy) && addonDiscardWindowOpen) {
+      closeAddonDiscardWindow();
+    }
 
     if (!dealAnimPlayed && gameState.phase === 'initial-peek') {
       dealAnimPlayed = true;
@@ -450,6 +464,16 @@ function handleSharedEvent(event) {
     setActionStatus('CABO!', `<span class="asb-name">${actorName}</span> called CABO! 🎯`, 'Everyone gets one final turn');
     setTimeout(clearActionStatus, 4000);
   }
+  if (event.type === 'addon-discard-correct') {
+    showBanner(`✅  ${actorName} addon discarded correctly!`, `Now playing with ${event.newHandSize} cards`);
+    setActionStatus('ADDON DISCARD ✅', `<span class="asb-name">${actorName}</span> correctly matched — lost a card!`, `Now has ${event.newHandSize} cards`);
+    setTimeout(clearActionStatus, 4000);
+  }
+  if (event.type === 'addon-discard-wrong') {
+    showBanner(`❌  ${actorName} addon discard was wrong!`, `Drew a penalty card`);
+    setActionStatus('ADDON DISCARD ❌', `<span class="asb-name">${actorName}</span> guessed wrong — drew a penalty!`, `Now has ${event.newHandSize} cards`);
+    setTimeout(clearActionStatus, 4000);
+  }
 }
 
 const isMyTurn = () => gameState?.currentTurn === myId;
@@ -591,13 +615,15 @@ window.discardDrawnCard = async function () {
   if (!isMyTurn() || !gameState.drawnCard) return;
   const gs = gameState;
   const lbl = cardLabel(gs.drawnCard);
+  const discardedCard = gs.drawnCard;
   const updates = {
     drawnCard: null,
-    discard: [...(gs.discard || []), gs.drawnCard],
-    log: addLog(gs.log, `<span class="lname">${myName}</span> discarded ${lbl}${gs.drawnCard.suit}`)
+    discard: [...(gs.discard || []), discardedCard],
+    log: addLog(gs.log, `<span class="lname">${myName}</span> discarded ${lbl}${discardedCard.suit}`)
   };
   Object.assign(updates, computeNextTurn(gs));
   await updateGame(roomCode, updates);
+  triggerAddonDiscardWindow(discardedCard);
 };
 
 // ─── USE POWER ────────────────────────────────────────────────────────────────
@@ -657,6 +683,7 @@ async function swapWithMyCard(pos) {
   };
   Object.assign(updates, computeNextTurn(gs));
   await updateGame(roomCode, updates);
+  triggerAddonDiscardWindow(oldCard);
 
   // Animation: drawn card -> hand slot, old card -> discard pile
   await sleep(80);
@@ -720,6 +747,7 @@ function doPeekReveal(pos, card) {
   pendingAction = null;
   Object.assign(updates, computeNextTurn(gs));
   updateGame(roomCode, updates);
+  triggerAddonDiscardWindow(dc);
 
   // Pause renders, flip card face-up, hold 5s, flip back, resume
   renderingPaused = true;
@@ -795,6 +823,7 @@ function doSpyReveal(oppId, oppPos) {
     };
     Object.assign(updates, computeNextTurn(gameState));
     await updateGame(roomCode, updates);
+    triggerAddonDiscardWindow(dc);
   });
 }
 
@@ -822,6 +851,7 @@ async function doBlindswapFinish(oppId, oppPos) {
   pendingAction = null;
   Object.assign(updates, computeNextTurn(gs));
   await updateGame(roomCode, updates);
+  triggerAddonDiscardWindow(dc);
 }
 
 // ─── PEEK+SWAP (Q) ────────────────────────────────────────────────────────────
@@ -887,6 +917,7 @@ async function doPeekswapPickMine(myPos) {
   pendingAction = null;
   Object.assign(updates, computeNextTurn(gs));
   await updateGame(roomCode, updates);
+  triggerAddonDiscardWindow(dc);
 }
 
 // ─── KING SWAP (K) ────────────────────────────────────────────────────────────
@@ -987,9 +1018,165 @@ async function doKingswapSwap(oppId, oppPos) {
   pendingAction = null;
   Object.assign(updates, computeNextTurn(gs));
   await updateGame(roomCode, updates);
+  triggerAddonDiscardWindow(dc);
 }
 
-// ─── CABO ─────────────────────────────────────────────────────────────────────
+// ─── ADDON DISCARD ────────────────────────────────────────────────────────────
+
+// Call this right after any card lands on the discard pile.
+// discardedCard is the card object that was just added.
+async function triggerAddonDiscardWindow(discardedCard) {
+  if (!isHost) return; // only host writes this to avoid races
+  const gs = gameState;
+  if (!gs || gs.phase !== 'play') return;
+
+  const faceValue = addonDiscardFaceValue(discardedCard);
+  await updateGame(roomCode, {
+    addonDiscard: {
+      active: true,
+      discardFaceValue: faceValue,
+      claimedBy: null,
+      expiresAt: Date.now() + 5000
+    }
+  });
+
+  // Auto-close after 5.2s if nobody claimed
+  setTimeout(async () => {
+    const cur = gameState?.addonDiscard;
+    if (cur?.active && !cur?.claimedBy) {
+      await updateGame(roomCode, { 'addonDiscard/active': false });
+    }
+  }, 5200);
+}
+
+// Called when a player clicks Addon Discard on one of their cards.
+// Uses a Firebase transaction on claimedBy for FCFS atomicity.
+window.handleAddonDiscardClick = async function (cardIndex) {
+  const gs = gameState;
+  if (!gs?.addonDiscard?.active) return;
+  if (gs.addonDiscard.claimedBy) return; // already claimed
+  const myHand = gs.hands?.[myId] || [];
+  if (myHand.length <= 1) return; // can't discard last card
+
+  // Attempt to claim via update (Firebase last-write for exact-null check isn't a true transaction,
+  // but we guard with claimedBy null check server-side in resolveAddonDiscard)
+  // Use a timestamp-based claim attempt — first to set claimedBy wins
+  const adRef = ref(db, `rooms/${roomCode}/game/addonDiscard/claimedBy`);
+
+  // Firebase transaction for true FCFS atomicity
+  const { runTransaction } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
+  const result = await runTransaction(adRef, current => {
+    if (current === null || current === undefined) {
+      return myId; // I win the race
+    }
+    return; // abort — someone already claimed
+  });
+
+  if (!result.committed) return; // someone else was faster
+
+  // I won the race — now resolve
+  await resolveAddonDiscard(cardIndex);
+};
+
+async function resolveAddonDiscard(cardIndex) {
+  const gs = gameState;
+  const myHand = [...(gs.hands?.[myId] || [])];
+
+  // Safety checks
+  if (myHand.length <= 1) {
+    showToast("You can't discard your last card!", 2500);
+    await updateGame(roomCode, { 'addonDiscard/active': false });
+    return;
+  }
+
+  const chosenCard = myHand[cardIndex];
+  if (!chosenCard) return;
+
+  const discardFaceValue = gs.addonDiscard?.discardFaceValue;
+  const chosenFaceValue = addonDiscardFaceValue(chosenCard);
+  const isMatch = chosenFaceValue === discardFaceValue;
+
+  const chosenLabel = `${cardLabel(chosenCard)}${chosenCard.suit}`;
+  const topLabel = cardLabel(gs.discard?.[gs.discard.length - 1]);
+
+  let updates = { 'addonDiscard/active': false };
+
+  if (isMatch) {
+    // Remove card from hand — play with one fewer card permanently
+    const newHand = myHand.filter((_, i) => i !== cardIndex);
+    updates[`hands/${myId}`] = newHand;
+    updates['discard'] = [...(gs.discard || []), chosenCard];
+    updates['log'] = addLog(gs.log,
+      `<span class="lname">${myName}</span> ✅ addon-discarded ${chosenLabel} — correct! Now has ${newHand.length} cards`
+    );
+    broadcastEvent(roomCode, {
+      type: 'addon-discard-correct', actorId: myId, actorName: myName,
+      cardLabel: chosenLabel, newHandSize: newHand.length
+    });
+    // Update myKnownCards — remove the discarded index, shift down higher indices
+    const newKnown = new Map();
+    myKnownCards.forEach((card, idx) => {
+      if (idx < cardIndex) newKnown.set(idx, card);
+      else if (idx > cardIndex) newKnown.set(idx - 1, card);
+    });
+    myKnownCards.clear();
+    newKnown.forEach((v, k) => myKnownCards.set(k, v));
+    showToast(`✅ Correct! ${chosenLabel} matches ${topLabel}. Card discarded — you now have ${newHand.length} cards!`, 4000);
+  } else {
+    // Wrong — draw a card from the deck as penalty
+    const deck = [...(gs.deck || [])];
+    if (deck.length === 0) {
+      showToast('Deck empty — no penalty card drawn', 2000);
+      await updateGame(roomCode, updates);
+      return;
+    }
+    const penaltyCard = deck.shift();
+    const newHand = [...myHand, penaltyCard];
+    updates[`hands/${myId}`] = newHand;
+    updates['deck'] = deck;
+    updates['log'] = addLog(gs.log,
+      `<span class="lname">${myName}</span> ❌ wrong addon discard (${chosenLabel} ≠ ${topLabel}) — drew a penalty card`
+    );
+    broadcastEvent(roomCode, {
+      type: 'addon-discard-wrong', actorId: myId, actorName: myName,
+      cardLabel: chosenLabel, newHandSize: newHand.length
+    });
+    showToast(`❌ Wrong! ${chosenLabel} doesn't match ${topLabel}. You draw a penalty card.`, 4000);
+  }
+
+  await updateGame(roomCode, updates);
+}
+
+function openAddonDiscardWindow(gs) {
+  if (addonDiscardWindowOpen) return;
+  addonDiscardWindowOpen = true;
+  const myHand = gs.hands?.[myId] || [];
+  if (myHand.length <= 1) return; // nothing to show
+
+  renderAddonDiscardButtons(myHand, (cardIndex) => {
+    window.handleAddonDiscardClick(cardIndex);
+  });
+
+  // Countdown timer display
+  let remaining = 5;
+  const timerEl = document.getElementById('addon-discard-timer');
+  if (timerEl) timerEl.textContent = remaining;
+  addonDiscardCountdownTimer = setInterval(() => {
+    remaining--;
+    if (timerEl) timerEl.textContent = remaining;
+    if (remaining <= 0) closeAddonDiscardWindow();
+  }, 1000);
+}
+
+function closeAddonDiscardWindow() {
+  if (!addonDiscardWindowOpen) return;
+  addonDiscardWindowOpen = false;
+  clearInterval(addonDiscardCountdownTimer);
+  addonDiscardCountdownTimer = null;
+  clearAddonDiscardButtons();
+}
+
+
 window.callCabo = async function () {
   if (!isMyTurn() || gameState.caboCallerId || gameState.phase !== 'play' || pendingAction) return;
   const gs = gameState;
@@ -1026,6 +1213,7 @@ window.nextRound = async function () {
   pendingAction = null;
   lastEventId = null;
   dealAnimPlayed = false;
+  closeAddonDiscardWindow();
   document.getElementById('round-modal').classList.remove('open');
   document.getElementById('peek-overlay').style.display = 'none';
 };
