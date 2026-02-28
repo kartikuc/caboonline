@@ -631,3 +631,50 @@ input[type=text]:focus {
 
 /* ─── UTILITIES ─── */
 .pulsing { animation: pulse 1.8s ease-in-out infinite; }
+
+/* ─── ACTION STATUS BOX ─── */
+.action-status-box {
+  position: fixed;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 10px 20px;
+  min-width: 220px;
+  max-width: 360px;
+  text-align: center;
+  z-index: 150;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.55);
+  animation: fadeIn 0.2s ease;
+  pointer-events: none;
+}
+.asb-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.asb-body {
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.asb-body .asb-name {
+  color: var(--accent);
+  font-weight: 600;
+}
+.asb-body .asb-action {
+  color: var(--accent2);
+}
+.asb-body .asb-step {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+  font-family: 'DM Mono', monospace;
+}
