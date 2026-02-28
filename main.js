@@ -148,19 +148,19 @@ function initGame() {
 
     handleSharedEvent(gameState.event);
 
-    // Handle addon discard window open/close
-    const ad = gameState.addonDiscard;
-    if (ad?.active && !ad?.claimedBy && !addonDiscardWindowOpen) {
-      openAddonDiscardWindow(gameState);
-    } else if ((!ad?.active || ad?.claimedBy) && addonDiscardWindowOpen) {
-      closeAddonDiscardWindow();
-    }
-
     if (!dealAnimPlayed && gameState.phase === 'initial-peek') {
       dealAnimPlayed = true;
       runDealingAnimation();
     } else {
       renderGame();
+    }
+
+    // Handle addon discard window open/close AFTER renderGame so #my-cards is populated
+    const ad = gameState.addonDiscard;
+    if (ad?.active && !ad?.claimedBy && !addonDiscardWindowOpen) {
+      openAddonDiscardWindow(gameState);
+    } else if ((!ad?.active || ad?.claimedBy) && addonDiscardWindowOpen) {
+      closeAddonDiscardWindow();
     }
   });
 
@@ -526,8 +526,10 @@ function renderGame() {
   // Drawn card
   renderDrawnCard(gs, myId, pendingAction);
 
-  // My hand
-  renderMyHand(gs, myId, myKnownCards, myTurn ? pendingAction : null, handleMyCardClick);
+  // My hand — skip re-render while addon discard window is open (would destroy injected buttons)
+  if (!addonDiscardWindowOpen) {
+    renderMyHand(gs, myId, myKnownCards, myTurn ? pendingAction : null, handleMyCardClick);
+  }
 
   // My area highlight
   document.getElementById('my-area').className = 'my-area' + (myTurn ? ' my-turn' : '');
@@ -1151,19 +1153,24 @@ function openAddonDiscardWindow(gs) {
   if (addonDiscardWindowOpen) return;
   addonDiscardWindowOpen = true;
   const myHand = gs.hands?.[myId] || [];
-  if (myHand.length <= 1) return; // nothing to show
 
-  renderAddonDiscardButtons(myHand, (cardIndex) => {
-    window.handleAddonDiscardClick(cardIndex);
-  });
+  // Only render buttons if player has more than 1 card
+  if (myHand.length > 1) {
+    renderAddonDiscardButtons(myHand, (cardIndex) => {
+      window.handleAddonDiscardClick(cardIndex);
+    });
+  }
 
-  // Countdown timer display
+  // Countdown timer (always run, drives auto-close)
   let remaining = 5;
-  const timerEl = document.getElementById('addon-discard-timer');
-  if (timerEl) timerEl.textContent = remaining;
+  const updateTimer = () => {
+    const timerEl = document.getElementById('addon-discard-timer');
+    if (timerEl) timerEl.textContent = remaining;
+  };
+  updateTimer();
   addonDiscardCountdownTimer = setInterval(() => {
     remaining--;
-    if (timerEl) timerEl.textContent = remaining;
+    updateTimer();
     if (remaining <= 0) closeAddonDiscardWindow();
   }, 1000);
 }
@@ -1174,6 +1181,12 @@ function closeAddonDiscardWindow() {
   clearInterval(addonDiscardCountdownTimer);
   addonDiscardCountdownTimer = null;
   clearAddonDiscardButtons();
+  // Re-render hand now that the window is gone
+  if (gameState && !renderingPaused) {
+    const gs = gameState;
+    const myTurn = isMyTurn();
+    renderMyHand(gs, myId, myKnownCards, myTurn ? pendingAction : null, handleMyCardClick);
+  }
 }
 
 
