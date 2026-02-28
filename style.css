@@ -735,13 +735,14 @@ body::after {
   text-align: right;
 }
 
-/* Wrapper that holds card + button stacked */
-.addon-card-wrapper {
-  display: inline-flex;
-  flex-direction: column;
+/* Separate row of buttons aligned below the hand cards */
+.addon-btns-row {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
   align-items: center;
-  gap: 5px;
-  position: relative;
+  justify-content: center;
+  margin-top: 2px;
 }
 
 .addon-discard-btn {
@@ -761,6 +762,7 @@ body::after {
   box-shadow: 0 2px 8px rgba(217,119,6,0.4);
   animation: addonBtnPulse 0.9s ease-in-out infinite alternate;
   transition: background 0.15s, transform 0.1s, opacity 0.15s;
+  flex-shrink: 0;
 }
 
 .addon-discard-btn:hover:not(:disabled) {
