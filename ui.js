@@ -254,13 +254,15 @@ export function esc(s) {
 
 // Renders the addon-discard banner and buttons below each of the local player's cards.
 // onCardClick(cardIndex) is called when the player clicks a card button.
+// Strategy: render buttons in a separate #addon-btns-row that mirrors the hand layout,
+// so we never touch the existing .card-slot elements.
 export function renderAddonDiscardButtons(myHand, onCardClick) {
   clearAddonDiscardButtons();
 
-  // Banner above my-cards area
   const myArea = document.getElementById('my-area');
   if (!myArea) return;
 
+  // Banner
   const banner = document.createElement('div');
   banner.id = 'addon-discard-banner';
   banner.className = 'addon-discard-banner';
@@ -271,42 +273,31 @@ export function renderAddonDiscardButtons(myHand, onCardClick) {
   `;
   myArea.insertBefore(banner, myArea.firstChild);
 
-  // Button below each card slot
+  // Separate row of buttons that sits below #my-cards, visually aligned
   const myCardsEl = document.getElementById('my-cards');
   if (!myCardsEl) return;
-  const cardEls = [...myCardsEl.querySelectorAll('.card-slot')];
 
-  cardEls.forEach((cardEl, i) => {
-    // Wrap card + button in a positioned container
-    const wrapper = document.createElement('div');
-    wrapper.className = 'addon-card-wrapper';
-    wrapper.id = `addon-wrapper-${i}`;
+  const btnRow = document.createElement('div');
+  btnRow.id = 'addon-btns-row';
+  btnRow.className = 'addon-btns-row';
 
+  myHand.forEach((_, i) => {
     const btn = document.createElement('button');
     btn.className = 'addon-discard-btn';
     btn.textContent = 'Addon Discard';
     btn.onclick = (e) => {
       e.stopPropagation();
-      // Disable all buttons immediately to prevent double-click
       document.querySelectorAll('.addon-discard-btn').forEach(b => b.disabled = true);
       onCardClick(i);
     };
-
-    // Insert wrapper into DOM in place of the card element
-    cardEl.parentNode.insertBefore(wrapper, cardEl);
-    wrapper.appendChild(cardEl);
-    wrapper.appendChild(btn);
+    btnRow.appendChild(btn);
   });
+
+  // Insert the button row right after #my-cards
+  myCardsEl.insertAdjacentElement('afterend', btnRow);
 }
 
 export function clearAddonDiscardButtons() {
-  // Remove banner
   document.getElementById('addon-discard-banner')?.remove();
-
-  // Unwrap card elements from their wrappers
-  document.querySelectorAll('.addon-card-wrapper').forEach(wrapper => {
-    const cardEl = wrapper.querySelector('.card-slot');
-    if (cardEl) wrapper.parentNode.insertBefore(cardEl, wrapper);
-    wrapper.remove();
-  });
+  document.getElementById('addon-btns-row')?.remove();
 }
