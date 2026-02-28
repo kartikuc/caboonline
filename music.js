@@ -9,7 +9,6 @@ const TRACKS = {
     'https://ice4.somafm.com/deepspaceone-128-mp3', // Deep Space One: deep ambient fallback
   ],
 game: [
-  'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',  // Jazz24 — primary
   'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3',    // TSF Jazz — fallback
   'https://east.jazzgroove.com:8003/stream',                // The Jazz Groove — last resort
 ],
