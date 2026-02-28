@@ -9,8 +9,9 @@ const TRACKS = {
     'https://ice4.somafm.com/deepspaceone-128-mp3', // Deep Space One: deep ambient fallback
   ],
 game: [
-  'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3',    // TSF Jazz — fallback
-  'https://east.jazzgroove.com:8003/stream',                // The Jazz Groove — last resort
+  'https://listen.openstream.co/6273/audio',                          // Ambient Lounge — slow, mellow, no beats
+  'https://streams.fluxfm.de/Chillout/mp3-320/streams.fluxfm.de/',  // FluxFM Chillout — atmospheric electronica
+  'https://stream.liferadio.at/chillout/mp3-192/app/',               // Life Radio Chill — clean acoustic fallback
 ],
 };
 
