@@ -479,6 +479,14 @@ input[type=text]:focus {
   font-family: 'DM Mono', monospace;
 }
 .btn-action { font-size: 12px; padding: 8px 15px; white-space: nowrap; }
+.btn-music {
+  font-size: 16px; padding: 5px 9px; line-height: 1;
+  background: rgba(201,165,90,0.08); color: var(--accent);
+  border: 1px solid rgba(201,165,90,0.22);
+  border-radius: 8px; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.btn-music:hover { background: rgba(201,165,90,0.18); border-color: var(--accent); }
 .btn-danger {
   background: rgba(224,82,82,0.1); color: var(--red);
   border: 1px solid rgba(224,82,82,0.28);
@@ -685,6 +693,13 @@ input[type=text]:focus {
 }
 
 /* Subtle noise texture on body */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
 body::after {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
