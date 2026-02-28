@@ -108,6 +108,14 @@ export function fixArrays(gs) {
   });
 }
 
+// Returns the "face" key used for addon-discard matching.
+// Numbers match by number; J/Q/K match by face rank.
+export function addonDiscardFaceValue(card) {
+  if (!card) return null;
+  const f = Number(card.face ?? card.value ?? 0);
+  return f; // 1–13; King of Spades has face:13, value:0 — we still match on face:13
+}
+
 export function getHelpText(gs, myId, pendingAction) {
   const myTurn = gs.currentTurn === myId;
   const currentName = gs.playerNames?.[gs.currentTurn] || '?';
