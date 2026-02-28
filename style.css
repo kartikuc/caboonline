@@ -1,22 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap');
 
 :root {
-  --bg: #06060e;
-  --surface: #0d0d1c;
-  --surface2: #12122a;
-  --surface3: #181833;
-  --border: #1e1e3a;
-  --border2: #262650;
+  --bg: #1c1c1e;
+  --surface: #242426;
+  --surface2: #2c2c2e;
+  --surface3: #343436;
+  --border: #3a3a3c;
+  --border2: #48484a;
   --accent: #c9a55a;
   --accent2: #e8cc88;
-  --accent-glow: rgba(201,165,90,0.22);
+  --accent-glow: rgba(201,165,90,0.20);
   --red: #e05252;
   --green: #52b87a;
   --blue: #5a9de0;
   --purple: #9966dd;
-  --text: #e8e8f8;
-  --muted: #6a6a8a;
-  --muted2: #484868;
+  --text: #f0f0f0;
+  --muted: #8e8e93;
+  --muted2: #636366;
   --card-w: 72px;
   --card-h: 100px;
   --card-radius: 8px;
@@ -31,9 +31,8 @@ body::before {
   content: '';
   position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background:
-    radial-gradient(ellipse 90% 60% at 50% -5%, rgba(201,165,90,0.05) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 50% at 10% 90%, rgba(90,100,220,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 40% at 90% 80%, rgba(153,102,221,0.03) 0%, transparent 50%);
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,165,90,0.03) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 40% at 0% 100%, rgba(90,100,200,0.02) 0%, transparent 60%);
 }
 
 /* ─── SCROLLBARS ─── */
@@ -281,7 +280,7 @@ input[type=text]:focus {
 
 .game-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 20px; background: var(--surface);
+  padding: 8px 20px; background: var(--surface2);
   border-bottom: 1px solid var(--border); flex-shrink: 0; height: 50px;
 }
 .game-title {
@@ -298,7 +297,7 @@ input[type=text]:focus {
 
 .score-strip {
   display: flex; gap: 6px; padding: 6px 16px;
-  background: var(--surface2); border-bottom: 1px solid var(--border);
+  background: var(--surface3); border-bottom: 1px solid var(--border);
   overflow-x: auto; flex-shrink: 0; align-items: center;
 }
 .score-badge {
@@ -430,7 +429,7 @@ input[type=text]:focus {
 /* ─── CHAT ─── */
 .chat-panel {
   width: 200px; flex-shrink: 0; display: flex; flex-direction: column;
-  border-left: 1px solid var(--border); background: var(--surface); overflow: hidden;
+  border-left: 1px solid var(--border); background: var(--surface2); overflow: hidden;
 }
 .chat-header {
   padding: 10px 13px; border-bottom: 1px solid var(--border);
@@ -471,7 +470,7 @@ input[type=text]:focus {
 /* ─── BOTTOM BAR ─── */
 .bottom-bar {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 18px; background: var(--surface2);
+  padding: 8px 18px; background: var(--surface3);
   border-top: 1px solid var(--border); flex-shrink: 0;
   gap: 10px; min-height: 46px;
 }
@@ -677,4 +676,19 @@ input[type=text]:focus {
   color: var(--muted);
   margin-top: 2px;
   font-family: 'DM Mono', monospace;
+}
+
+/* ─── FELT TABLE TEXTURE ─── */
+.game-board {
+  background-image: 
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(201,165,90,0.03) 0%, transparent 70%);
+}
+
+/* Subtle noise texture on body */
+body::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
 }
