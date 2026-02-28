@@ -8,11 +8,11 @@ const TRACKS = {
     'https://ice2.somafm.com/dronezone-128-mp3',
     'https://ice4.somafm.com/deepspaceone-128-mp3', // Deep Space One: deep ambient fallback
   ],
-  game: [
-    'https://ice6.somafm.com/groovesalad-256-mp3',  // Groove Salad: chilled ambient/downtempo
-    'https://ice2.somafm.com/groovesalad-256-mp3',
-    'https://streams.fluxfm.de/Chillhop/mp3-320/streams.fluxfm.de/', // FluxFM Chillhop fallback
-  ],
+game: [
+  'https://live.amperwave.net/direct/ppm-jazz24mp3-ibc1',  // Jazz24 — primary
+  'https://tsfjazz.ice.infomaniak.ch/tsfjazz-high.mp3',    // TSF Jazz — fallback
+  'https://east.jazzgroove.com:8003/stream',                // The Jazz Groove — last resort
+],
 };
 
 const TARGET_VOL = 0.38;
