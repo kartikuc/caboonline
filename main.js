@@ -382,6 +382,27 @@ window.markReady = async function () {
 // When peekReady changes, re-render waiting list
 // (handled in main onValue callback via renderGame which checks peek overlay visibility)
 
+
+// ─── ACTION STATUS BOX ────────────────────────────────────────────────────────
+function setActionStatus(title, body, step = '') {
+  const box = document.getElementById('action-status-box');
+  const titleEl = document.getElementById('asb-title');
+  const bodyEl = document.getElementById('asb-body');
+  if (!box) return;
+  if (!title && !body) {
+    box.style.display = 'none';
+    return;
+  }
+  box.style.display = 'block';
+  titleEl.textContent = title || 'ACTION';
+  bodyEl.innerHTML = body + (step ? `<span class="asb-step">${step}</span>` : '');
+}
+
+function clearActionStatus() {
+  const box = document.getElementById('action-status-box');
+  if (box) box.style.display = 'none';
+}
+
 // ─── SHARED EVENTS ────────────────────────────────────────────────────────────
 function handleSharedEvent(event) {
   if (!event || event.id === lastEventId) return;
@@ -391,11 +412,14 @@ function handleSharedEvent(event) {
 
   if (event.type === 'peek') {
     showBanner(`👁  ${actorName} peeked at their card`, isMe ? `You saw it` : '');
+    setActionStatus('PEEK', `<span class="asb-name">${actorName}</span> peeked at their own card`, isMe ? `Card ${event.pos + 1}: ${event.cardLabel}` : '');
+    setTimeout(clearActionStatus, 5500);
   }
   if (event.type === 'spy') {
     const tn = event.targetName || '?';
     showBanner(`🔍  ${actorName} spied on ${tn}`, isMe ? `Card: ${event.cardLabel}` : '');
-    // Show a brief flash on the opponent's card if we're another player
+    setActionStatus('SPY', `<span class="asb-name">${actorName}</span> spied on <span class="asb-action">${tn}</span>`, isMe ? `Card ${event.pos + 1}: ${event.cardLabel}` : 'Card revealed to spy only');
+    setTimeout(clearActionStatus, 5500);
     if (!isMe) {
       const els = getCardEls(event.targetId, myId);
       const el = els[event.pos];
@@ -404,7 +428,10 @@ function handleSharedEvent(event) {
   }
   if (event.type === 'swap' || event.type === 'blindswap') {
     const tn = event.targetName || '?';
+    const label = event.type === 'blindswap' ? 'BLIND SWAP' : 'SWAP';
     showBanner(`🔄  ${actorName} swapped with ${tn}`, '');
+    setActionStatus(label, `<span class="asb-name">${actorName}</span> swapped with <span class="asb-action">${tn}</span>`);
+    setTimeout(clearActionStatus, 3000);
     setTimeout(() => {
       [
         { pid: event.actorId, pos: event.myPos },
@@ -420,6 +447,8 @@ function handleSharedEvent(event) {
   }
   if (event.type === 'cabo') {
     showBanner(`🎯  ${actorName} called CABO!`, 'Everyone gets one more turn');
+    setActionStatus('CABO!', `<span class="asb-name">${actorName}</span> called CABO! 🎯`, 'Everyone gets one final turn');
+    setTimeout(clearActionStatus, 4000);
   }
 }
 
@@ -481,9 +510,50 @@ function renderGame() {
   document.getElementById('my-name-label').textContent = myName + ' (you)';
 
   // Help text
-  document.getElementById('help-text').textContent = getHelpText(gs, myId, pendingAction);
+  const helpStr = getHelpText(gs, myId, pendingAction);
+  document.getElementById('help-text').textContent = helpStr;
+
+  // Action status box — shows all players what's happening
+  if (gs.phase === 'play' && !renderingPaused) {
+    const currentName = gs.playerNames?.[gs.currentTurn] || '?';
+    const pa = pendingAction;
+    if (myTurn && pa) {
+      // Show what I'm doing to myself (others see it via events)
+      const actionLabels = {
+        'peek:pick': ['PEEK OWN', `Choose a card to peek at`],
+        'spy:pick-opp': ['SPY', `Choose an opponent's card to spy on`],
+        'blindswap:pick-mine': ['BLIND SWAP', `Choose YOUR card to swap`],
+        'blindswap:pick-opp': ['BLIND SWAP', `Now choose an opponent's card`],
+        'peekswap:pick-opp': ['PEEK + SWAP', `Choose opponent's card to peek at`],
+        'peekswap:peek-done': ['PEEK + SWAP', `Peeking...`],
+        'peekswap:pick-mine': ['PEEK + SWAP', `Now choose YOUR card to swap out`],
+        'kingswap:pick-opp': ['KING SWAP', `Choose opponent's card to peek at`],
+        'kingswap:peek-done': ['KING SWAP', `Peeking opponent card...`],
+        'kingswap:pick-mine': ['KING SWAP', `Now choose YOUR card to peek at`],
+        'kingswap:peek-mine': ['KING SWAP', `Peeking your card...`],
+        'kingswap:pick-opp-swap': ['KING SWAP', `Now choose opponent's card to swap`],
+      };
+      const key = `${pa.type}:${pa.step}`;
+      const [label, desc] = actionLabels[key] || ['ACTION', helpStr];
+      setActionStatus(label, `<span class="asb-name">You</span> — <span class="asb-action">${desc}</span>`);
+    } else if (myTurn && gs.drawnCard) {
+      setActionStatus('YOUR TURN', `<span class="asb-name">You</span> drew a card — discard or swap into hand`);
+    } else if (myTurn && !gs.drawnCard) {
+      setActionStatus('YOUR TURN', `<span class="asb-name">You</span> — draw a card or call CABO`);
+    } else if (!myTurn && !pa) {
+      // Show what other player is doing
+      if (gs.drawnCard) {
+        setActionStatus('DECIDING', `<span class="asb-name">${currentName}</span> is deciding what to do with their drawn card`);
+      } else {
+        setActionStatus('DRAWING', `<span class="asb-name">${currentName}</span> is taking their turn`);
+      }
+    }
+  } else if (gs.phase === 'initial-peek') {
+    setActionStatus('PEEK PHASE', `All players are memorizing their inner cards`);
+  }
 
   // CABO button
+  if (gs.phase === 'round-end' || gs.phase === 'game-over') clearActionStatus();
   document.getElementById('cabo-btn').disabled =
     !myTurn || !!gs.caboCallerId || gs.phase !== 'play' || !!gs.drawnCard || !!pendingAction;
 
@@ -604,25 +674,34 @@ async function swapWithMyCard(pos) {
     });
   }
 
-  // After swap: show the new card face-up in hand for 3s
-  myKnownCards.set(pos, newCard);
+  // After swap: pause renders, show new card face-up for 3s, then flip back
+  renderingPaused = true;
   renderGame();
-
   await sleep(120);
   const freshHandEls = getCardEls(myId, myId);
-  const el = freshHandEls[pos];
-  if (el) {
-    await flipCardUp(el, cardImageUrl(newCard));
-    await sleep(3000);
-    await flipCardDown(el);
-    myKnownCards.delete(pos);
-    renderGame();
+  const swapEl = freshHandEls[pos];
+  if (swapEl) {
+    const swapImg = swapEl.querySelector('.card-img');
+    if (swapImg) {
+      swapEl.style.transition = 'transform 0.3s ease';
+      swapEl.style.transform = 'rotateY(90deg)';
+      await sleep(160);
+      swapImg.src = cardImageUrl(newCard);
+      swapEl.style.transform = 'rotateY(0deg)';
+      await sleep(5000);
+      swapEl.style.transform = 'rotateY(90deg)';
+      await sleep(160);
+      swapImg.src = 'https://deckofcardsapi.com/static/img/back.png';
+      swapEl.style.transform = 'rotateY(0deg)';
+      await sleep(200);
+    }
   }
+  renderingPaused = false;
+  renderGame();
 }
 
 // ─── PEEK OWN (7/8) ──────────────────────────────────────────────────────────
 function doPeekReveal(pos, card) {
-  myKnownCards.set(pos, card);
   const gs = gameState;
   const dc = pendingAction.drawnCard;
   const lbl = cardLabel(card);
@@ -631,7 +710,7 @@ function doPeekReveal(pos, card) {
     type: 'peek', actorId: myId, actorName: myName,
     pos, cardLabel: `${lbl}${card.suit}`
   });
-  showToast(`Card ${pos + 1}: ${lbl}${card.suit} = ${card.value}pts`, 3000);
+  showToast(`Card ${pos + 1}: ${lbl}${card.suit} = ${card.value}pts`, 5400);
 
   const updates = {
     drawnCard: null,
@@ -642,16 +721,30 @@ function doPeekReveal(pos, card) {
   Object.assign(updates, computeNextTurn(gs));
   updateGame(roomCode, updates);
 
+  // Pause renders, flip card face-up, hold 5s, flip back, resume
+  renderingPaused = true;
+  setActionStatus('PEEKING', `<span class="asb-name">You</span> are peeking at card ${pos + 1}`, `${lbl}${card.suit} = ${card.value}pts`);
   renderGame();
-  sleep(120).then(async () => {
+  sleep(80).then(async () => {
     const el = getCardEls(myId, myId)[pos];
     if (el) {
-      await flipCardUp(el, cardImageUrl(card));
-      await sleep(3000);
-      await flipCardDown(el);
-      myKnownCards.delete(pos);
-      renderGame();
+      const img = el.querySelector('.card-img');
+      if (img) {
+        el.style.transition = 'transform 0.3s ease';
+        el.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        img.src = cardImageUrl(card);
+        el.style.transform = 'rotateY(0deg)';
+        await sleep(5000);
+        el.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        img.src = 'https://deckofcardsapi.com/static/img/back.png';
+        el.style.transform = 'rotateY(0deg)';
+        await sleep(200);
+      }
     }
+    renderingPaused = false;
+    renderGame();
   });
 }
 
@@ -662,36 +755,47 @@ function doSpyReveal(oppId, oppPos) {
   const lbl = cardLabel(card);
   const opName = gs.playerNames[oppId];
   const dc = pendingAction.drawnCard;
-  pendingAction = { ...pendingAction, step: 'revealed', oppId, oppPos };
-  renderGame();
-  showToast(`${opName} Card ${oppPos + 1}: ${lbl}${card.suit} = ${card.value}pts`, 3000);
+  pendingAction = null;
+
+  showToast(`${opName} Card ${oppPos + 1}: ${lbl}${card.suit} = ${card.value}pts`, 5400);
   broadcastEvent(roomCode, {
     type: 'spy', actorId: myId, actorName: myName,
     targetId: oppId, targetName: opName,
     pos: oppPos, cardLabel: `${lbl}${card.suit}`
   });
 
-  // Show the opponent's card face-up briefly for me only
-  sleep(100).then(async () => {
-    const oppEls = getCardEls(oppId, myId);
-    const el = oppEls[oppPos];
+  // Pause renders, flip opponent card face-up, hold 5s, flip back, then end turn
+  renderingPaused = true;
+  setActionStatus('SPYING', `<span class="asb-name">You</span> spied on <span class="asb-action">${opName}</span>`, `Card ${oppPos + 1}: ${lbl}${card.suit} = ${card.value}pts`);
+  renderGame();
+  sleep(80).then(async () => {
+    const el = getCardEls(oppId, myId)[oppPos];
     if (el) {
-      await flipCardUp(el, cardImageUrl(card));
-      await sleep(2800);
-      await flipCardDown(el);
+      const img = el.querySelector('.card-img');
+      if (img) {
+        el.style.transition = 'transform 0.3s ease';
+        el.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        img.src = cardImageUrl(card);
+        el.style.transform = 'rotateY(0deg)';
+        await sleep(5000);
+        el.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        img.src = 'https://deckofcardsapi.com/static/img/back.png';
+        el.style.transform = 'rotateY(0deg)';
+        await sleep(200);
+      }
     }
-  });
-
-  setTimeout(async () => {
+    renderingPaused = false;
+    // End turn
     const updates = {
       drawnCard: null,
       discard: [...(gameState.discard || []), dc],
       log: addLog(gameState.log, `<span class="lname">${myName}</span> spied on ${opName}`)
     };
-    pendingAction = null;
     Object.assign(updates, computeNextTurn(gameState));
     await updateGame(roomCode, updates);
-  }, 3200);
+  });
 }
 
 // ─── BLIND SWAP (J) ──────────────────────────────────────────────────────────
@@ -732,21 +836,33 @@ function doPeekswapPickOpp(oppId, oppPos) {
     targetId: oppId, targetName: opName,
     pos: oppPos, cardLabel: `${lbl}${card.suit}`
   });
-  showToast(`${opName} Card ${oppPos + 1}: ${lbl}${card.suit} — pick your card to swap`, 3000);
+  showToast(`${opName} Card ${oppPos + 1}: ${lbl}${card.suit} — pick your card to swap`, 5400);
 
   // Show opp card briefly
-  sleep(100).then(async () => {
-    const el = getCardEls(oppId, myId)[oppPos];
-    if (el) { await flipCardUp(el, cardImageUrl(card)); }
-  });
-
+  // Pause renders and flip opp card face-up for 2.5s, then move to pick-mine
+  renderingPaused = true;
   renderGame();
-  setTimeout(() => {
-    // Flip back and move to pick-mine
-    const el = getCardEls(oppId, myId)[oppPos];
-    if (el) flipCardDown(el);
+  sleep(80).then(async () => {
+    const peekEl = getCardEls(oppId, myId)[oppPos];
+    if (peekEl) {
+      const peekImg = peekEl.querySelector('.card-img');
+      if (peekImg) {
+        peekEl.style.transition = 'transform 0.3s ease';
+        peekEl.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        peekImg.src = cardImageUrl(card);
+        peekEl.style.transform = 'rotateY(0deg)';
+        await sleep(5000);
+        peekEl.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        peekImg.src = 'https://deckofcardsapi.com/static/img/back.png';
+        peekEl.style.transform = 'rotateY(0deg)';
+        await sleep(200);
+      }
+    }
+    renderingPaused = false;
     if (pendingAction) { pendingAction.step = 'pick-mine'; renderGame(); }
-  }, 2500);
+  });
 }
 
 async function doPeekswapPickMine(myPos) {
@@ -785,18 +901,31 @@ function doKingswapPickOpp(oppId, oppPos) {
     targetId: oppId, targetName: opName,
     pos: oppPos, cardLabel: `${lbl}${card.suit}`
   });
-  showToast(`${opName} Card ${oppPos + 1}: ${lbl}${card.suit} — now pick your card`, 3000);
+  showToast(`${opName} Card ${oppPos + 1}: ${lbl}${card.suit} — now pick your card`, 5400);
 
-  sleep(100).then(async () => {
-    const el = getCardEls(oppId, myId)[oppPos];
-    if (el) { await flipCardUp(el, cardImageUrl(card)); }
-  });
+  renderingPaused = true;
   renderGame();
-  setTimeout(() => {
-    const el = getCardEls(oppId, myId)[oppPos];
-    if (el) flipCardDown(el);
+  sleep(80).then(async () => {
+    const kingOppEl = getCardEls(oppId, myId)[oppPos];
+    if (kingOppEl) {
+      const kingOppImg = kingOppEl.querySelector('.card-img');
+      if (kingOppImg) {
+        kingOppEl.style.transition = 'transform 0.3s ease';
+        kingOppEl.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        kingOppImg.src = cardImageUrl(card);
+        kingOppEl.style.transform = 'rotateY(0deg)';
+        await sleep(5000);
+        kingOppEl.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        kingOppImg.src = 'https://deckofcardsapi.com/static/img/back.png';
+        kingOppEl.style.transform = 'rotateY(0deg)';
+        await sleep(200);
+      }
+    }
+    renderingPaused = false;
     if (pendingAction) { pendingAction.step = 'pick-mine'; renderGame(); }
-  }, 2500);
+  });
 }
 
 function doKingswapPickMine(pos) {
@@ -809,19 +938,31 @@ function doKingswapPickMine(pos) {
     type: 'peek', actorId: myId, actorName: myName,
     pos, cardLabel: `${lbl}${myCard.suit}`
   });
-  showToast(`Your Card ${pos + 1}: ${lbl}${myCard.suit} — pick opponent card to swap`, 3000);
+  showToast(`Your Card ${pos + 1}: ${lbl}${myCard.suit} — pick opponent card to swap`, 5400);
 
-  sleep(100).then(async () => {
-    const el = getCardEls(myId, myId)[pos];
-    if (el) { await flipCardUp(el, cardImageUrl(myCard)); }
-  });
+  renderingPaused = true;
   renderGame();
-  setTimeout(() => {
-    myKnownCards.delete(pos);
-    const el = getCardEls(myId, myId)[pos];
-    if (el) flipCardDown(el);
+  sleep(80).then(async () => {
+    const myPeekEl = getCardEls(myId, myId)[pos];
+    if (myPeekEl) {
+      const myPeekImg = myPeekEl.querySelector('.card-img');
+      if (myPeekImg) {
+        myPeekEl.style.transition = 'transform 0.3s ease';
+        myPeekEl.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        myPeekImg.src = cardImageUrl(myCard);
+        myPeekEl.style.transform = 'rotateY(0deg)';
+        await sleep(5000);
+        myPeekEl.style.transform = 'rotateY(90deg)';
+        await sleep(160);
+        myPeekImg.src = 'https://deckofcardsapi.com/static/img/back.png';
+        myPeekEl.style.transform = 'rotateY(0deg)';
+        await sleep(200);
+      }
+    }
+    renderingPaused = false;
     if (pendingAction) { pendingAction.step = 'pick-opp-swap'; renderGame(); }
-  }, 2500);
+  });
 }
 
 async function doKingswapSwap(oppId, oppPos) {
