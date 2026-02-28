@@ -692,3 +692,94 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 128px 128px;
 }
+
+/* ─── ADDON DISCARD ─── */
+.addon-discard-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(90deg, rgba(233,111,28,0.18), rgba(233,111,28,0.08));
+  border: 1px solid rgba(233,111,28,0.45);
+  border-radius: 8px;
+  padding: 6px 12px;
+  margin-bottom: 8px;
+  animation: addonBannerIn 0.3s cubic-bezier(0.22,1,0.36,1);
+  flex-wrap: wrap;
+}
+
+@keyframes addonBannerIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1); }
+}
+
+.addon-discard-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #f59e0b;
+  white-space: nowrap;
+}
+
+.addon-discard-hint {
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+}
+
+.addon-discard-countdown {
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: #f59e0b;
+  font-weight: 500;
+  white-space: nowrap;
+  min-width: 28px;
+  text-align: right;
+}
+
+/* Wrapper that holds card + button stacked */
+.addon-card-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+}
+
+.addon-discard-btn {
+  display: block;
+  width: var(--card-w);
+  padding: 5px 0;
+  background: linear-gradient(135deg, #d97706, #b45309);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(217,119,6,0.4);
+  animation: addonBtnPulse 0.9s ease-in-out infinite alternate;
+  transition: background 0.15s, transform 0.1s, opacity 0.15s;
+}
+
+.addon-discard-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(245,158,11,0.5);
+}
+
+.addon-discard-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.addon-discard-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  animation: none;
+}
+
+@keyframes addonBtnPulse {
+  from { box-shadow: 0 2px 8px rgba(217,119,6,0.35); }
+  to   { box-shadow: 0 2px 18px rgba(245,158,11,0.65); }
+}
