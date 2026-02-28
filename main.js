@@ -19,6 +19,7 @@ import {
   showBanner, showToast, getCardEls, esc,
   renderAddonDiscardButtons, clearAddonDiscardButtons
 } from './ui.js';
+import { startMusic, stopMusic, setVolume, isMusicPlaying } from './music.js';
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let myId = null, myName = '', roomCode = null;
@@ -1245,6 +1246,20 @@ window.sendChat = async function () {
   await set(push(ref(db, `rooms/${roomCode}/chat`)), {
     id: myId, name: myName, text, ts: Date.now()
   });
+};
+
+// ─── MUSIC ────────────────────────────────────────────────────────────────────
+window.toggleMusic = function () {
+  const btn = document.getElementById('music-btn');
+  if (isMusicPlaying()) {
+    stopMusic();
+    btn.textContent = '🔇';
+    btn.title = 'Enable music';
+  } else {
+    startMusic();
+    btn.textContent = '🎵';
+    btn.title = 'Disable music';
+  }
 };
 
 // ─── EVENT LISTENERS ──────────────────────────────────────────────────────────
